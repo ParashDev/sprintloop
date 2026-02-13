@@ -142,22 +142,9 @@ sprintloop/
 
 ## Getting Started
 
-No installation required. Just open `index.html` in a browser or serve via any static file server:
+No installation, no build step, no dependencies. Just open `index.html` in your browser -- that's it.
 
-```bash
-# Option 1: Python
-python -m http.server 8000
-
-# Option 2: Node
-npx serve .
-
-# Option 3: PHP
-php -S localhost:8000
-```
-
-Then navigate to `http://localhost:8000`.
-
-Or simply visit the **[live demo](https://sprintloop.dplooy.com/)**.
+Or visit the **[live demo](https://sprintloop.dplooy.com/)**.
 
 ---
 
