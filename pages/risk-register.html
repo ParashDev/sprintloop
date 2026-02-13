@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(()=>{if(localStorage.getItem('po-toolkit-theme')!=='light')document.documentElement.classList.add('dark')})()</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Register - SprintLoop | Free Project Risk Management Tool</title>
+  <meta name="description" content="Track project risks with probability and impact scoring, visual heatmaps, and mitigation plans. Free risk register for agile project management.">
+  <link rel="canonical" href="https://sprintloop.dplooy.com/pages/risk-register.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: { light: '#f8fafc', dark: '#1e293b' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/shared.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Instrument Serif', serif; }
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 4px 4px 0 0;
+    }
+    .stat-card-blue::before { background: #3b82f6; }
+    .stat-card-red::before { background: #ef4444; }
+    .stat-card-amber::before { background: #f59e0b; }
+    .stat-card-emerald::before { background: #10b981; }
+  </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen">
+
+  <!-- Nav injected by JS -->
+
+  <!-- Page header injected by JS -->
+  <div id="page-header"></div>
+
+  <!-- Main content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+    <!-- Stats Dashboard -->
+    <div id="stats-dashboard" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="stat-card stat-card-blue rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Open Risks</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+        </div>
+        <p id="stat-total" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Non-closed risks</p>
+      </div>
+      <div class="stat-card stat-card-red rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">High</span>
+          <div class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+          </div>
+        </div>
+        <p id="stat-high" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Score 15-25</p>
+      </div>
+      <div class="stat-card stat-card-amber rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Medium</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+        </div>
+        <p id="stat-medium" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Score 8-14</p>
+      </div>
+      <div class="stat-card stat-card-emerald rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Low</span>
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+        <p id="stat-low" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Score 1-7</p>
+      </div>
+    </div>
+
+    <!-- Mobile Action Bar -->
+    <div class="sm:hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5 space-y-2 mb-6">
+      <div class="flex items-center gap-2">
+        <button onclick="openRiskForm()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add
+        </button>
+        <button onclick="openAiRiskInput()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          AI
+        </button>
+        <button onclick="handleExportCSV()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export
+        </button>
+      </div>
+      <div class="flex items-center gap-2">
+        <select id="filter-category-mobile" onchange="syncMobileFilter('category')"
+          class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">Category</option>
+          <option value="Technical">Technical</option>
+          <option value="Business">Business</option>
+          <option value="Resource">Resource</option>
+          <option value="Schedule">Schedule</option>
+          <option value="External">External</option>
+        </select>
+        <select id="filter-status-mobile" onchange="syncMobileFilter('status')"
+          class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">Status</option>
+          <option value="Open">Open</option>
+          <option value="Mitigating">Mitigating</option>
+          <option value="Closed">Closed</option>
+          <option value="Accepted">Accepted</option>
+        </select>
+        <select id="filter-owner-mobile" onchange="syncMobileFilter('owner')"
+          class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">Owner</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Desktop Action Bar -->
+    <div id="action-bar" class="hidden sm:flex flex-wrap items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mb-6">
+      <button onclick="openRiskForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Add Risk
+      </button>
+      <button onclick="openAiRiskInput()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        AI Identify Risks
+      </button>
+
+      <div class="flex-1"></div>
+
+      <select id="filter-category" onchange="handleFilter()" class="px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        <option value="">All Categories</option>
+        <option value="Technical">Technical</option>
+        <option value="Business">Business</option>
+        <option value="Resource">Resource</option>
+        <option value="Schedule">Schedule</option>
+        <option value="External">External</option>
+      </select>
+      <select id="filter-status" onchange="handleFilter()" class="px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        <option value="">All Statuses</option>
+        <option value="Open">Open</option>
+        <option value="Mitigating">Mitigating</option>
+        <option value="Closed">Closed</option>
+        <option value="Accepted">Accepted</option>
+      </select>
+      <select id="filter-owner" onchange="handleFilter()" class="px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        <option value="">All Owners</option>
+      </select>
+      <select id="sort-by" onchange="handleFilter()" class="px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        <option value="score">Sort: Score</option>
+        <option value="category">Sort: Category</option>
+        <option value="status">Sort: Status</option>
+      </select>
+      <button onclick="handleExportCSV()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Export CSV
+      </button>
+    </div>
+
+    <!-- Heatmap section -->
+    <div id="heatmap-section" class="mb-10">
+      <h2 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-4">Probability / Impact Heatmap</h2>
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6">
+        <!-- Heatmap grid (built entirely by JS) -->
+        <div id="heatmap-container"></div>
+
+        <!-- Category legend -->
+        <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <span class="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Categories</span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400"><span class="w-2.5 h-2.5 rounded-sm" style="background:#6366f1;"></span> Technical</span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400"><span class="w-2.5 h-2.5 rounded-sm" style="background:#10b981;"></span> Business</span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400"><span class="w-2.5 h-2.5 rounded-sm" style="background:#f59e0b;"></span> Resource</span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400"><span class="w-2.5 h-2.5 rounded-sm" style="background:#06b6d4;"></span> Schedule</span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400"><span class="w-2.5 h-2.5 rounded-sm" style="background:#f43f5e;"></span> External</span>
+        </div>
+
+        <!-- Zone legend -->
+        <div id="heatmap-zone-legend" class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mt-2"></div>
+      </div>
+    </div>
+
+    <!-- Risk table -->
+    <div id="risk-table-section">
+      <h2 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-4">All Risks</h2>
+      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+        <table id="risk-table" class="w-full border-collapse min-w-[720px]">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-800/60">
+              <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Title</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+              <th class="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Prob.</th>
+              <th class="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Impact</th>
+              <th class="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Score</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Owner</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+              <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="risk-table-body">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="hidden text-center py-20">
+      <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      </div>
+      <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-1">No risks registered yet</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Add your first risk to start building the heatmap.</p>
+      <button onclick="openRiskForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Add Risk
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Risk form modal -->
+  <div id="risk-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <h2 id="modal-title" class="text-lg font-bold text-slate-900 dark:text-white">New Risk</h2>
+      </div>
+      <form id="risk-form" onsubmit="handleSaveRisk(event)" class="flex flex-col flex-1 min-h-0">
+        <div class="px-6 py-5 space-y-4 overflow-y-auto flex-1">
+          <input type="hidden" id="risk-id" value="">
+
+          <div>
+            <label for="risk-title" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
+            <input type="text" id="risk-title" required placeholder="Brief risk description"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          </div>
+
+          <div>
+            <label for="risk-description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+            <textarea id="risk-description" rows="2" placeholder="Detailed explanation of the risk"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="risk-category" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Category</label>
+              <select id="risk-category" required
+                class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                <option value="Technical">Technical</option>
+                <option value="Business">Business</option>
+                <option value="Resource">Resource</option>
+                <option value="Schedule">Schedule</option>
+                <option value="External">External</option>
+              </select>
+            </div>
+            <div>
+              <label for="risk-status" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
+              <select id="risk-status" required
+                class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                <option value="Open">Open</option>
+                <option value="Mitigating">Mitigating</option>
+                <option value="Closed">Closed</option>
+                <option value="Accepted">Accepted</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="risk-probability" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Probability</label>
+              <select id="risk-probability" required onchange="updateScorePreview()"
+                class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                <option value="1">1 - Rare</option>
+                <option value="2">2 - Unlikely</option>
+                <option value="3" selected>3 - Possible</option>
+                <option value="4">4 - Likely</option>
+                <option value="5">5 - Almost Certain</option>
+              </select>
+            </div>
+            <div>
+              <label for="risk-impact" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Impact</label>
+              <select id="risk-impact" required onchange="updateScorePreview()"
+                class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                <option value="1">1 - Negligible</option>
+                <option value="2">2 - Minor</option>
+                <option value="3" selected>3 - Moderate</option>
+                <option value="4">4 - Major</option>
+                <option value="5">5 - Severe</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Risk Score</label>
+            <div class="flex items-center gap-3">
+              <span id="risk-score-preview" class="inline-flex items-center justify-center w-12 h-10 rounded-lg text-sm font-bold bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">9</span>
+              <span id="risk-score-label" class="text-xs font-medium text-slate-500 dark:text-slate-400">Probability x Impact</span>
+            </div>
+          </div>
+
+          <div>
+            <label for="risk-mitigation" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mitigation Plan</label>
+            <textarea id="risk-mitigation" rows="2" placeholder="Steps to reduce probability or impact"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none"></textarea>
+          </div>
+
+          <div>
+            <label for="risk-owner" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Owner</label>
+            <input type="text" id="risk-owner" placeholder="Person responsible for this risk"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
+          <button type="button" onclick="closeModal('risk-modal')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-medium transition-colors">Save Risk</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../scripts/shared.js"></script>
+  <script src="../scripts/risk-register.js"></script>
+  <script>
+    buildNav('risk-register.html');
+    document.getElementById('page-header').appendChild(
+      buildPageHeader('Risk Register & Heatmap', 'Track project risks with visual probability and impact scoring.',
+        `<div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">What is a Risk Register?</h3>
+          <p>A risk register is a structured log of all identified risks to a project, along with their probability of occurring, potential impact, and planned mitigation strategies. Combined with a risk heatmap, it gives the team a <span class="font-medium text-slate-700 dark:text-slate-300">visual representation of which risks demand immediate attention</span> (high probability + high impact) versus which can be monitored passively.</p>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">Why Use This Tool?</h3>
+          <p>Every project has risks. The question is whether you identify and manage them proactively or get surprised when they materialize. This tool captures risks with probability and impact scores (1-5 scale), automatically calculates a risk score, categorizes them by severity, and plots them on a color-coded heatmap. Risks in the red zone (high probability, high impact) are immediately visible and demand mitigation plans before they become reality.</p>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">When to Use It</h3>
+          <ul class="list-disc list-inside space-y-1 ml-1">
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Project planning</span> -- Identify risks at the start of a project when there is still time to prevent or prepare for them</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Sprint planning</span> -- Review the risk register each sprint to check if any risks have changed in probability or impact</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Stakeholder reporting</span> -- Show leadership the risk landscape with the heatmap -- it communicates more in one glance than a page of text</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Post-incident analysis</span> -- After a risk materializes, update the register with lessons learned to improve future risk identification</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">Key Concepts</h3>
+          <ul class="list-disc list-inside space-y-1 ml-1">
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Risk Score</span> -- Probability multiplied by Impact (both on a 1-5 scale). A score of 1-5 is low, 6-12 is medium, 13-25 is critical. The score determines urgency.</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Risk Heatmap</span> -- A 5x5 grid with probability on one axis and impact on the other. Risks in the upper-right (red zone) need immediate action. Lower-left (green zone) risks are acceptable and just need monitoring.</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Mitigation Strategy</span> -- A concrete plan to reduce either the probability or impact of a risk. "Hope it doesn't happen" is not a mitigation strategy.</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Risk Owner</span> -- The person responsible for monitoring the risk and executing the mitigation plan. Every risk should have an owner.</li>
+          </ul>
+        </div>`)
+    );
+    initRiskRegister();
+  </script>
+</body>
+</html>

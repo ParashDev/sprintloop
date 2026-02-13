@@ -1,0 +1,214 @@
+/* ── PO Toolkit Shared Styles ── */
+/* Only what Tailwind CDN can't handle */
+
+/* Theme transition for smooth toggle */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Toast animations */
+@keyframes toast-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes toast-out {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+.toast-enter { animation: toast-in 0.3s ease forwards; }
+.toast-exit { animation: toast-out 0.3s ease forwards; }
+
+/* Card hover lift */
+.card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Heatmap grid for risk register and traceability */
+.heatmap-grid {
+  display: grid;
+  gap: 2px;
+}
+.heatmap-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: default;
+  transition: transform 0.15s ease;
+  position: relative;
+}
+.heatmap-cell:hover {
+  transform: scale(1.1);
+  z-index: 10;
+}
+.heatmap-cell-item:hover {
+  transform: scale(1.08);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+@media (max-width: 639px) {
+  .heatmap-cell-item:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* RACI cell cycling */
+.raci-cell {
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease;
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 6px;
+}
+.raci-cell:active {
+  transform: scale(0.92);
+}
+.raci-R { background-color: #3b82f6; color: #fff; }
+.raci-A { background-color: #ef4444; color: #fff; }
+.raci-C { background-color: #eab308; color: #1a1a2e; }
+.raci-I { background-color: #6b7280; color: #fff; }
+
+/* Drag ghost styling */
+.dragging {
+  opacity: 0.5;
+}
+.drag-over {
+  border: 2px dashed #94a3b8 !important;
+}
+
+/* Capacity bar animation */
+.capacity-bar {
+  transition: width 0.5s ease;
+  border-radius: 9999px;
+  height: 100%;
+}
+
+/* Retro column cards */
+.retro-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.retro-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile nav animation */
+@keyframes nav-slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.nav-mobile-enter {
+  animation: nav-slide-down 0.2s ease forwards;
+}
+
+/* Tooltip */
+.tooltip {
+  position: relative;
+}
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 50;
+}
+.dark .tooltip::after {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+.tooltip:hover::after {
+  opacity: 1;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Focus ring for accessibility */
+:focus-visible {
+  outline: 2px solid #94a3b8;
+  outline-offset: 2px;
+}
+
+/* Badge pulse for status indicators */
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.badge-pulse {
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/* Priority color chips */
+.priority-must { background-color: #ef4444; color: #fff; }
+.priority-should { background-color: #f97316; color: #fff; }
+.priority-could { background-color: #3b82f6; color: #fff; }
+.priority-wont { background-color: #6b7280; color: #fff; }
+
+/* AI spinner */
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+.ai-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ai-spin 0.6s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* AI results panel */
+.ai-results-panel {
+  animation: ai-fade-in 0.3s ease;
+}
+@keyframes ai-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(()=>{if(localStorage.getItem('po-toolkit-theme')!=='light')document.documentElement.classList.add('dark')})()</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprint Capacity Planner - SprintLoop | Team Capacity Calculator</title>
+  <meta name="description" content="Calculate team capacity, manage sprint backlogs, and visualize commitment levels. Free sprint capacity planning tool for Scrum teams.">
+  <link rel="canonical" href="https://sprintloop.dplooy.com/pages/capacity-planner.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: { light: '#f8fafc', dark: '#1e293b' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/shared.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Instrument Serif', serif; }
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 4px 4px 0 0;
+    }
+    .stat-card-blue::before { background: #3b82f6; }
+    .stat-card-amber::before { background: #f59e0b; }
+    .stat-card-emerald::before { background: #10b981; }
+    .stat-card-rose::before { background: #f43f5e; }
+    .capacity-track {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .capacity-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.5s ease, background-color 0.3s ease;
+    }
+    .member-avatar {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
+
+  <!-- Nav and header injected by JS -->
+  <div id="page-header"></div>
+
+  <!-- Capacity Dashboard -->
+  <div id="capacity-panel" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Available -->
+      <div class="stat-card stat-card-blue rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Available</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+        </div>
+        <p id="stat-available" class="text-2xl font-bold text-slate-900 dark:text-white">0 hrs</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Total team hours</p>
+      </div>
+      <!-- Committed -->
+      <div class="stat-card stat-card-amber rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Committed</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          </div>
+        </div>
+        <p id="stat-committed" class="text-2xl font-bold text-slate-900 dark:text-white">0 hrs</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Planned work</p>
+      </div>
+      <!-- Remaining -->
+      <div class="stat-card stat-card-emerald rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Remaining</span>
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          </div>
+        </div>
+        <p id="stat-remaining" class="text-2xl font-bold text-slate-900 dark:text-white">0 hrs</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Buffer capacity</p>
+      </div>
+      <!-- Commitment -->
+      <div class="stat-card stat-card-rose rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Commitment</span>
+          <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+        </div>
+        <p id="stat-ratio" class="text-2xl font-bold text-slate-900 dark:text-white">0%</p>
+        <p id="capacity-label" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Target: 70-85%</p>
+      </div>
+    </div>
+    <!-- Capacity Progress Bar -->
+    <div class="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Capacity Utilization</span>
+        <span id="capacity-pct-label" class="text-xs font-semibold text-slate-600 dark:text-slate-300">0%</span>
+      </div>
+      <div class="capacity-track bg-slate-100 dark:bg-slate-800">
+        <div id="capacity-bar" class="capacity-fill bg-emerald-500" style="width: 0%"></div>
+      </div>
+      <div class="flex items-center justify-between mt-2">
+        <span class="text-xs text-slate-400">0%</span>
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1.5 text-xs text-slate-400"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Healthy</span>
+          <span class="flex items-center gap-1.5 text-xs text-slate-400"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Caution</span>
+          <span class="flex items-center gap-1.5 text-xs text-slate-400"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> Over</span>
+        </div>
+        <span class="text-xs text-slate-400">100%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sprint Selector Bar (Mobile) -->
+  <div class="sm:hidden max-w-7xl mx-auto px-4 mt-6">
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5 mb-2">
+      <div class="flex items-center gap-2">
+        <select id="planner-sprint-select-mobile" onchange="handlePlannerSprintChange('mobile')"
+          class="flex-1 min-w-0 px-2.5 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 truncate"></select>
+        <button onclick="openNewPlannerSprintModal()" title="New Sprint" class="w-9 h-9 inline-flex items-center justify-center rounded-lg border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        </button>
+      </div>
+      <div class="flex items-center gap-2 mt-2">
+        <span id="planner-sprint-summary-mobile" class="flex-1 min-w-0 text-xs text-slate-500 dark:text-slate-400 truncate"></span>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="btn-complete-planner-sprint-mobile" onclick="completePlannerSprint()" class="hidden inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold transition-colors">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Complete
+          </button>
+          <button id="btn-delete-planner-sprint-mobile" onclick="deletePlannerSprint()" title="Delete Sprint" class="hidden w-7 h-7 inline-flex items-center justify-center rounded-lg text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sprint Selector Bar (Desktop) -->
+  <div class="hidden sm:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+    <div class="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-3 mb-2">
+      <select id="planner-sprint-select" onchange="handlePlannerSprintChange('desktop')"
+        class="px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 min-w-[200px]"></select>
+      <button onclick="openNewPlannerSprintModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        New Sprint
+      </button>
+      <button id="btn-complete-planner-sprint" onclick="completePlannerSprint()" class="hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-sm font-semibold transition-colors">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Complete Sprint
+      </button>
+      <button id="btn-delete-planner-sprint" onclick="deletePlannerSprint()" class="hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-colors">
+        Delete Sprint
+      </button>
+      <div class="flex-1"></div>
+      <span id="planner-sprint-summary" class="text-xs text-slate-500 dark:text-slate-400 truncate"></span>
+    </div>
+  </div>
+
+  <!-- Sprint Config Toolbar -->
+  <div id="config-bar" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2">
+    <div class="flex flex-wrap items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+      <div class="flex items-center gap-2 sm:gap-4 flex-wrap w-full sm:w-auto">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+          <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <label for="sprint-days" class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Sprint</label>
+          <input type="number" id="sprint-days" min="1" max="30" value="10"
+            class="w-14 px-2 py-1 text-sm rounded bg-transparent border-0 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-slate-400 focus:outline-none text-center font-semibold">
+          <span class="text-xs text-slate-400 ml-auto sm:ml-0">days</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+          <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <label for="ceremony-hours" class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Ceremonies</label>
+          <input type="number" id="ceremony-hours" min="0" max="80" value="6"
+            class="w-14 px-2 py-1 text-sm rounded bg-transparent border-0 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-slate-400 focus:outline-none text-center font-semibold">
+          <span class="text-xs text-slate-400 ml-auto sm:ml-0">hrs/person</span>
+        </div>
+      </div>
+      <div id="config-buttons" class="w-full sm:w-auto sm:ml-auto flex items-center gap-2">
+        <!-- AI + Import buttons injected here by JS -->
+        <button onclick="handleExportCSV()" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white transition-colors flex-1 sm:flex-initial">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Members Section -->
+  <div id="team-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Team Members</h2>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Manage your sprint team and individual availability</p>
+      </div>
+      <button onclick="openModal('member-modal')" class="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 text-sm font-medium rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span class="hidden sm:inline">Add </span>Member
+      </button>
+    </div>
+    <div id="team-content" class="hidden">
+      <!-- Desktop table -->
+      <div id="team-table-wrapper" class="hidden lg:block rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-100 dark:border-slate-800">
+              <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Member</th>
+              <th class="text-center px-4 py-3.5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Daily Hrs</th>
+              <th class="text-center px-4 py-3.5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">PTO Days</th>
+              <th class="text-center px-4 py-3.5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Net Hours</th>
+              <th class="text-right px-5 py-3.5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="team-table-body" class="divide-y divide-slate-50 dark:divide-slate-800/50"></tbody>
+        </table>
+      </div>
+      <!-- Mobile cards -->
+      <div id="team-cards" class="lg:hidden space-y-3"></div>
+    </div>
+    <div id="team-empty" class="hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-10 text-center">
+      <svg class="w-10 h-10 mx-auto text-slate-300 dark:text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <p class="text-sm text-slate-500 dark:text-slate-500">No team members yet</p>
+      <p class="text-xs text-slate-400 dark:text-slate-600 mt-1">Add your first team member to calculate capacity</p>
+    </div>
+  </div>
+
+  <!-- Backlog / Committed Columns -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-16">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Backlog Column -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-2 h-2 rounded-full bg-slate-400"></div>
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Backlog</h2>
+            <span id="backlog-count" class="text-xs font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <button onclick="openItemModal(false)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Item
+          </button>
+        </div>
+        <div id="backlog-column"
+          class="min-h-[200px] rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/20 p-3 space-y-2 transition-colors"
+          ondrop="handleDrop(event, false)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+        </div>
+      </div>
+
+      <!-- Committed Column -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Committed</h2>
+            <span id="committed-count" class="text-xs font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <button onclick="openItemModal(true)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Item
+          </button>
+        </div>
+        <div id="committed-column"
+          class="min-h-[200px] rounded-xl border-2 border-dashed border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/20 dark:bg-emerald-900/5 p-3 space-y-2 transition-colors"
+          ondrop="handleDrop(event, true)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Add/Edit Member Modal -->
+  <div id="member-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-md">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+        <h3 id="member-modal-title" class="text-lg font-semibold text-slate-900 dark:text-white">Add Team Member</h3>
+        <button onclick="closeModal('member-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="member-form" class="p-6 space-y-4" onsubmit="handleMemberSubmit(event)">
+        <input type="hidden" id="member-edit-id" value="">
+        <div>
+          <label for="member-name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Name</label>
+          <input type="text" id="member-name" required placeholder="e.g. Jane Smith"
+            class="w-full px-3 py-2 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400 focus:outline-none">
+        </div>
+        <div>
+          <label for="member-role" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role</label>
+          <select id="member-role" required
+            class="w-full px-3 py-2 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400 focus:outline-none">
+            <option value="Developer">Developer</option>
+            <option value="QA Engineer">QA Engineer</option>
+            <option value="Project Manager">Project Manager</option>
+            <option value="Product Owner">Product Owner</option>
+            <option value="Designer">Designer</option>
+            <option value="Tech Lead">Tech Lead</option>
+            <option value="DevOps">DevOps</option>
+            <option value="Business Analyst">Business Analyst</option>
+            <option value="Stakeholder">Stakeholder</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="member-capacity" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Daily Capacity (hrs)</label>
+            <input type="number" id="member-capacity" min="0" max="24" value="6" required
+              class="w-full px-3 py-2 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400 focus:outline-none">
+          </div>
+          <div>
+            <label for="member-pto" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">PTO Days</label>
+            <input type="number" id="member-pto" min="0" max="30" value="0" required
+              class="w-full px-3 py-2 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400 focus:outline-none">
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('member-modal')" class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-sm font-medium rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white transition-colors">Save Member</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add/Edit Item Modal -->
+  <div id="item-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-md">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+        <h3 id="item-modal-title" class="text-lg font-semibold text-slate-900 dark:text-white">Add Backlog Item</h3>
+        <button onclick="closeModal('item-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="item-form" class="p-6 space-y-4" onsubmit="handleItemSubmit(event)">
+        <input type="hidden" id="item-edit-id" value="">
+        <input type="hidden" id="item-committed-flag" value="false">
+        <div>
+          <label for="item-title" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
+          <input type="text" id="item-title" required placeholder="e.g. Implement login flow"
+            class="w-full px-3 py-2 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400 focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="item-points" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Story Points</label>
+            <input type="number" id="item-points" min="0" max="100" value="3" required
+              class="w-full px-3 py-2 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400 focus:outline-none">
+          </div>
+          <div>
+            <label for="item-hours" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Hours</label>
+            <input type="number" id="item-hours" min="0" max="999" step="0.5" value="8" required
+              class="w-full px-3 py-2 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400 focus:outline-none">
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('item-modal')" class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-sm font-medium rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white transition-colors">Save Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Planner Item Detail Modal -->
+  <div id="planner-detail-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+
+      <!-- Header -->
+      <div class="flex items-start justify-between p-5 pb-0">
+        <div class="flex-1 min-w-0 pr-4">
+          <p id="pd-title" class="text-lg font-bold text-slate-900 dark:text-white leading-snug"></p>
+          <p id="pd-benefit" class="text-sm text-slate-500 dark:text-slate-400 mt-1"></p>
+        </div>
+        <button onclick="closeModal('planner-detail-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 flex flex-col md:flex-row gap-0 md:gap-6 p-5 overflow-y-auto md:overflow-hidden">
+
+        <!-- Left panel: story details -->
+        <div class="flex-1 min-w-0 space-y-5 md:overflow-y-auto pr-0 md:pr-4">
+
+          <!-- Acceptance Criteria -->
+          <div id="pd-ac-section" class="hidden">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acceptance Criteria</h3>
+            </div>
+            <ul id="pd-ac-list" class="space-y-1.5 ml-6"></ul>
+          </div>
+
+          <!-- No story link message -->
+          <div id="pd-no-story" class="hidden">
+            <p class="text-sm text-slate-400 dark:text-slate-500 italic">This item was added manually and is not linked to a User Story Forge story.</p>
+          </div>
+        </div>
+
+        <!-- Right panel: metadata -->
+        <div class="w-full md:w-56 shrink-0 mt-6 md:mt-0 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 pt-6 md:pt-0 md:pl-6">
+
+          <!-- Metadata grid: 2-col on mobile, stacked on desktop -->
+          <div class="grid grid-cols-2 md:grid-cols-1 gap-4">
+            <!-- Epic -->
+            <div id="pd-epic-section" class="hidden">
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Epic</label>
+              <span id="pd-epic-id" class="inline-flex items-center gap-1.5 text-sm font-mono font-semibold px-2.5 py-1 rounded-full bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400"></span>
+            </div>
+
+            <!-- Status -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Status</label>
+              <span id="pd-status" class="inline-block text-xs px-2.5 py-1 rounded-full font-semibold"></span>
+            </div>
+
+            <!-- Story Points -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Story Points</label>
+              <span id="pd-points" class="inline-block text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium"></span>
+            </div>
+
+            <!-- Estimated Hours -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Estimated Hours</label>
+              <span id="pd-hours" class="inline-block text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium"></span>
+            </div>
+
+            <!-- Priority -->
+            <div id="pd-priority-section" class="hidden">
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Priority</label>
+              <span id="pd-priority" class="inline-block text-xs px-2.5 py-1 rounded-full font-semibold"></span>
+            </div>
+          </div>
+
+          <div class="h-2"></div>
+
+          <!-- Divider + Actions -->
+          <div class="border-t border-slate-200 dark:border-slate-800 pt-4">
+            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Actions</label>
+            <button id="pd-btn-move" onclick="movePlannerDetailItem()" class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors mb-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+              <span id="pd-move-label">Commit to Sprint</span>
+            </button>
+            <button onclick="editPlannerDetailItem()" class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors mb-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              Edit
+            </button>
+            <button onclick="deletePlannerDetailItem()" class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium transition-colors">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../scripts/shared.js"></script>
+  <script src="../scripts/sprint-planner.js"></script>
+</body>
+</html>

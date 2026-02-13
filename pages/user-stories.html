@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(()=>{if(localStorage.getItem('po-toolkit-theme')!=='light')document.documentElement.classList.add('dark')})()</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Story Manager - SprintLoop | Write & Organize Agile Stories</title>
+  <meta name="description" content="Write, organize, and export user stories with acceptance criteria and MoSCoW prioritization. Free agile user story tool with AI-powered generation.">
+  <link rel="canonical" href="https://sprintloop.dplooy.com/pages/user-stories.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: { light: '#f8fafc', dark: '#1e293b' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/shared.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Instrument Serif', serif; }
+  </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
+
+  <!-- Nav injected by JS -->
+
+  <!-- Page header injected by JS -->
+  <div id="page-header"></div>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+    <!-- Action Bar -->
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5 sm:p-3 space-y-2.5">
+      <!-- Row 1: Action buttons -->
+      <div id="action-buttons" class="flex items-center gap-2 sm:gap-3">
+        <button id="btn-new-story" onclick="openStoryForm()" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold whitespace-nowrap transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span class="hidden sm:inline">New </span>Story
+        </button>
+        <!-- AI button injected here by JS -->
+        <div class="flex-1 hidden sm:block"></div>
+        <button id="btn-export" onclick="handleExportCSV()" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium whitespace-nowrap transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export<span class="hidden sm:inline"> CSV</span>
+        </button>
+      </div>
+
+      <!-- Row 2: Search + Filters -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+        <input id="search-input" type="text" placeholder="Search stories..." oninput="handleSearch()"
+          class="w-full sm:flex-1 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        <div class="flex items-center gap-2">
+          <select id="filter-epic" onchange="handleFilter()"
+            class="flex-1 sm:flex-initial min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            <option value="">Epic</option>
+            <option value="_unlinked">Unlinked</option>
+          </select>
+          <select id="filter-priority" onchange="handleFilter()"
+            class="flex-1 sm:flex-initial min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            <option value="">Priority</option>
+            <option value="Must Have">Must Have</option>
+            <option value="Should Have">Should Have</option>
+            <option value="Could Have">Could Have</option>
+            <option value="Won't Have">Won't Have</option>
+          </select>
+          <select id="filter-status" onchange="handleFilter()"
+            class="flex-1 sm:flex-initial min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            <option value="">Status</option>
+            <option value="Backlog">Backlog</option>
+            <option value="To Do">To Do</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Review">Review</option>
+            <option value="Done">Done</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Story List -->
+    <div id="story-list" class="mt-6"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden mt-16 text-center">
+      <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-1">No stories yet</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-500 mb-6">Create your first user story to get started.</p>
+      <button onclick="openStoryForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        New Story
+      </button>
+    </div>
+  </main>
+
+  <!-- Story Form Modal -->
+  <div id="story-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <h2 id="modal-title" class="text-lg font-bold text-slate-900 dark:text-white">New Story</h2>
+        <button onclick="closeModal('story-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="story-form" onsubmit="handleSaveStory(event)" class="flex-1 flex flex-col overflow-hidden">
+      <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <input type="hidden" id="story-id" value="">
+
+        <!-- Role -->
+        <div>
+          <label for="story-role" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">As a...</label>
+          <input type="text" id="story-role" required placeholder="e.g., product owner"
+            class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        </div>
+
+        <!-- Action -->
+        <div>
+          <label for="story-action" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">I want to...</label>
+          <input type="text" id="story-action" required placeholder="e.g., filter backlog items by priority"
+            class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        </div>
+
+        <!-- Benefit -->
+        <div>
+          <label for="story-benefit" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">So that...</label>
+          <input type="text" id="story-benefit" required placeholder="e.g., I can focus the team on the highest-value work"
+            class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        </div>
+
+        <!-- Acceptance Criteria -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Acceptance Criteria</label>
+          <div id="ac-list" class="space-y-2"></div>
+          <button type="button" onclick="addAcceptanceCriterion()" class="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-900 dark:text-white hover:text-slate-700 font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add criterion
+          </button>
+        </div>
+
+        <!-- Row: Story Points + Priority + Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label for="story-points" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Story Points</label>
+            <select id="story-points"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="5">5</option>
+              <option value="8">8</option>
+              <option value="13">13</option>
+              <option value="21">21</option>
+            </select>
+          </div>
+          <div>
+            <label for="story-priority" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Priority</label>
+            <select id="story-priority"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+              <option value="Must Have">Must Have</option>
+              <option value="Should Have">Should Have</option>
+              <option value="Could Have" selected>Could Have</option>
+              <option value="Won't Have">Won't Have</option>
+            </select>
+          </div>
+          <div>
+            <label for="story-status" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
+            <select id="story-status"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+              <option value="Backlog" selected>Backlog</option>
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Review">Review</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+        <!-- Actions (sticky footer) -->
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+          <button type="button" onclick="closeModal('story-modal')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+            Save Story
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../scripts/shared.js"></script>
+  <script src="../scripts/user-stories.js"></script>
+</body>
+</html>

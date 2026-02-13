@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(()=>{if(localStorage.getItem('po-toolkit-theme')!=='light')document.documentElement.classList.add('dark')})()</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Epic Tracker - SprintLoop | Track Epics & Feature Traceability</title>
+  <meta name="description" content="Track epics with linked user stories, feature mapping, test coverage heatmaps, and gap analysis. Free epic tracking tool for agile teams.">
+  <link rel="canonical" href="https://sprintloop.dplooy.com/pages/epics.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: { light: '#f8fafc', dark: '#1e293b' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/shared.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Instrument Serif', serif; }
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 4px 4px 0 0;
+    }
+    .stat-card-blue::before { background: #3b82f6; }
+    .stat-card-amber::before { background: #f59e0b; }
+    .stat-card-emerald::before { background: #10b981; }
+    .stat-card-rose::before { background: #f43f5e; }
+    .coverage-track {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .coverage-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.5s ease, background-color 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
+
+  <!-- Nav injected by JS -->
+
+  <!-- Page header injected by JS -->
+  <div id="page-header"></div>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+    <!-- Stats Dashboard -->
+    <div id="stats-dashboard" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 hidden">
+      <div class="stat-card stat-card-blue rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Total</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+        </div>
+        <p id="stat-total" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Epics tracked</p>
+      </div>
+      <div class="stat-card stat-card-amber rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">No Tests</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+          </div>
+        </div>
+        <p id="stat-no-tests" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Missing test cases</p>
+      </div>
+      <div class="stat-card stat-card-amber rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">No Features</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          </div>
+        </div>
+        <p id="stat-no-features" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Missing feature links</p>
+      </div>
+      <div class="stat-card stat-card-rose rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Blocked</span>
+          <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          </div>
+        </div>
+        <p id="stat-blocked" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p id="stat-blocked-label" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Epics blocked</p>
+      </div>
+    </div>
+
+    <!-- Coverage Progress Bar -->
+    <div id="coverage-bar-section" class="mb-6 hidden">
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Overall Coverage</span>
+          <span id="coverage-pct-label" class="text-xs font-semibold text-slate-600 dark:text-slate-300">0%</span>
+        </div>
+        <div class="coverage-track bg-slate-100 dark:bg-slate-800">
+          <div id="coverage-bar" class="coverage-fill bg-emerald-500" style="width: 0%"></div>
+        </div>
+        <div class="flex items-center justify-between mt-2">
+          <div class="flex items-center gap-3 sm:gap-4 flex-wrap text-xs text-slate-400">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Full</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Partial</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> None</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Action Bar -->
+    <div class="sm:hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5 space-y-2 mb-6">
+      <div class="flex items-center gap-2">
+        <button onclick="openEpicForm()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add
+        </button>
+        <button onclick="openLinkStoriesModal()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Link
+        </button>
+        <button onclick="openAiEpicInput()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          AI
+        </button>
+      </div>
+      <div class="flex items-center gap-2">
+        <select id="filter-status-mobile" onchange="syncMobileFilter('status')"
+          class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">Status</option>
+          <option value="Not Started">Not Started</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Complete">Complete</option>
+          <option value="Blocked">Blocked</option>
+        </select>
+        <select id="filter-priority-mobile" onchange="syncMobileFilter('priority')"
+          class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">Priority</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <select id="filter-coverage-mobile" onchange="syncMobileFilter('coverage')"
+          class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">Coverage</option>
+          <option value="full">Full</option>
+          <option value="partial">Partial</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="handleExportCSV()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Desktop Action Bar -->
+    <div id="action-bar" class="hidden sm:flex flex-wrap items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mb-6">
+      <button id="btn-add-epic" onclick="openEpicForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Add Epic
+      </button>
+      <!-- Link Stories + AI Generate buttons injected by JS after btn-add-epic -->
+
+      <div class="flex-1"></div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-2">
+        <select id="filter-status" onchange="handleFilter()"
+          class="min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">All Statuses</option>
+          <option value="Not Started">Not Started</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Complete">Complete</option>
+          <option value="Blocked">Blocked</option>
+        </select>
+        <select id="filter-priority" onchange="handleFilter()"
+          class="min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">All Priorities</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <select id="filter-coverage" onchange="handleFilter()"
+          class="min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">All Coverage</option>
+          <option value="full">Full coverage</option>
+          <option value="partial">Partial</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+
+      <button id="btn-export" onclick="handleExportCSV()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Export CSV
+      </button>
+    </div>
+
+    <!-- Coverage Heatmap -->
+    <div id="heatmap-section" class="mb-6 hidden">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 class="text-base font-semibold text-slate-900 dark:text-white">Coverage Heatmap</h2>
+        <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Full</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500 inline-block"></span> Partial</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500 inline-block"></span> None</span>
+        </div>
+      </div>
+      <div id="coverage-heatmap" class="flex flex-wrap gap-2"></div>
+      <div id="heatmap-empty" class="hidden text-sm text-slate-500 dark:text-slate-500">No epics to display.</div>
+    </div>
+
+    <!-- Epics Section -->
+    <div id="epics-section" class="mb-6 hidden">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-base font-semibold text-slate-900 dark:text-white">Epics</h2>
+        <span id="epic-count-badge" class="text-xs font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">0</span>
+      </div>
+
+      <!-- Epic Cards Grid -->
+      <div id="epic-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden mt-16 text-center">
+      <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      </div>
+      <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-1">No epics yet</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-500 mb-6">Add your first epic to start tracking coverage.</p>
+      <button onclick="openEpicForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Add Epic
+      </button>
+    </div>
+  </main>
+
+  <!-- Epic Form Modal -->
+  <div id="epic-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <!-- Sticky header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <h2 id="modal-title" class="text-lg font-bold text-slate-900 dark:text-white">New Epic</h2>
+        <button onclick="closeModal('epic-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Scrollable body -->
+      <form id="epic-form" onsubmit="handleSaveEpic(event)" class="px-6 py-5 space-y-5 overflow-y-auto flex-1 min-h-0">
+        <input type="hidden" id="epic-edit-id" value="">
+
+        <!-- ID (read-only display) -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Epic ID</label>
+          <div id="epic-display-id" class="w-full px-3 py-2 rounded-lg text-sm bg-slate-200 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 select-none">Auto-generated</div>
+        </div>
+
+        <!-- Title -->
+        <div>
+          <label for="epic-title" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
+          <input type="text" id="epic-title" required placeholder="e.g., User authentication via SSO"
+            class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="epic-description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+          <textarea id="epic-description" rows="3" placeholder="Detailed requirement description..."
+            class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y"></textarea>
+        </div>
+
+        <!-- Row: Priority + Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="epic-priority" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Priority</label>
+            <select id="epic-priority"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+              <option value="High">High</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <div>
+            <label for="epic-status" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
+            <select id="epic-status"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+              <option value="Not Started" selected>Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Complete">Complete</option>
+              <option value="Blocked">Blocked</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Source -->
+        <div>
+          <label for="epic-source" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Source</label>
+          <input type="text" id="epic-source" placeholder="e.g., Stakeholder interview, compliance audit"
+            class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        </div>
+
+        <!-- Features -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Features</label>
+          <div id="features-list" class="space-y-2"></div>
+          <button type="button" onclick="addFeatureRow()" class="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-900 dark:text-white hover:text-slate-700 font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add feature
+          </button>
+        </div>
+
+        <!-- Test Cases -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Test Cases</label>
+          <div id="testcases-list" class="space-y-2"></div>
+          <button type="button" onclick="addTestCaseRow()" class="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-900 dark:text-white hover:text-slate-700 font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add test case
+          </button>
+        </div>
+
+        <!-- Linked Stories -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Linked Stories</label>
+          <div id="linked-stories-container" class="rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+            <div id="linked-stories-list" class="max-h-[200px] overflow-y-auto p-2 space-y-1">
+              <p id="linked-stories-empty" class="text-xs text-slate-400 dark:text-slate-500 p-2 text-center">No stories available. Create stories in User Story Forge first.</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Select user stories that belong to this epic.</p>
+        </div>
+      </form>
+
+      <!-- Sticky footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
+        <button type="button" onclick="closeModal('epic-modal')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" form="epic-form" class="px-5 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+          Save Epic
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Epic Detail Modal -->
+  <div id="epic-detail-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span id="detail-id" class="font-mono text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded"></span>
+          <span id="detail-priority"></span>
+          <span id="detail-status"></span>
+        </div>
+        <button onclick="closeModal('epic-detail-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-6 py-5 overflow-y-auto flex-1 min-h-0 space-y-5">
+        <div>
+          <h2 id="detail-title" class="text-lg font-bold text-slate-900 dark:text-white"></h2>
+          <p id="detail-description" class="text-sm text-slate-500 dark:text-slate-400 mt-1"></p>
+        </div>
+        <div id="detail-source-section" class="hidden">
+          <p class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Source</p>
+          <p id="detail-source" class="text-sm text-slate-700 dark:text-slate-300"></p>
+        </div>
+        <div id="detail-stories-section" class="hidden">
+          <p class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Linked Stories</p>
+          <div id="detail-stories" class="space-y-1.5"></div>
+        </div>
+        <div id="detail-features-section" class="hidden">
+          <p class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Features</p>
+          <ul id="detail-features" class="space-y-1.5"></ul>
+        </div>
+        <div id="detail-tests-section" class="hidden">
+          <p class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Test Cases</p>
+          <ul id="detail-tests" class="space-y-1.5"></ul>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
+        <button onclick="closeModal('epic-detail-modal')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Close</button>
+        <button id="detail-edit-btn" class="px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">Edit Epic</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../scripts/shared.js"></script>
+  <script src="../scripts/epics.js"></script>
+</body>
+</html>

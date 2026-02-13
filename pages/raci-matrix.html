@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(()=>{if(localStorage.getItem('po-toolkit-theme')!=='light')document.documentElement.classList.add('dark')})()</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RACI Matrix Builder - SprintLoop | Free Responsibility Assignment Tool</title>
+  <meta name="description" content="Build RACI responsibility matrices with color-coded cells, validation, and team import. Free RACI matrix tool for agile project management.">
+  <link rel="canonical" href="https://sprintloop.dplooy.com/pages/raci-matrix.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: { light: '#f8fafc', dark: '#1e293b' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/shared.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Instrument Serif', serif; }
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 4px 4px 0 0;
+    }
+    .stat-card-blue::before { background: #3b82f6; }
+    .stat-card-amber::before { background: #f59e0b; }
+    .stat-card-emerald::before { background: #10b981; }
+    .stat-card-rose::before { background: #f43f5e; }
+    .raci-cell {
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s ease, box-shadow 0.15s ease;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      border-radius: 8px;
+    }
+    .raci-cell:hover {
+      box-shadow: 0 0 0 2px rgba(148,163,184,0.3);
+    }
+    .raci-cell:active { transform: scale(0.9); }
+    .raci-R { background-color: #3b82f6; color: #fff; }
+    .raci-A { background-color: #ef4444; color: #fff; }
+    .raci-C { background-color: #eab308; color: #1a1a2e; }
+    .raci-I { background-color: #6b7280; color: #fff; }
+    .workload-bar {
+      height: 6px;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
+
+  <!-- Nav injected by JS -->
+
+  <!-- Page header injected by JS -->
+  <div id="page-header"></div>
+
+  <!-- Main content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+    <!-- Stats Dashboard -->
+    <div id="raci-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 hidden">
+      <div class="stat-card stat-card-blue rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Tasks</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+        </div>
+        <p id="stat-tasks" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Deliverables tracked</p>
+      </div>
+      <div class="stat-card stat-card-amber rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Stakeholders</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+        </div>
+        <p id="stat-stakeholders" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">People involved</p>
+      </div>
+      <div class="stat-card stat-card-emerald rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Assignments</span>
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+        </div>
+        <p id="stat-assignments" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Roles assigned</p>
+      </div>
+      <div class="stat-card stat-card-rose rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Coverage</span>
+          <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+        </div>
+        <p id="stat-coverage" class="text-2xl font-bold text-slate-900 dark:text-white">0%</p>
+        <p id="stat-coverage-label" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Tasks with Accountable</p>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="hidden py-16">
+      <div class="text-center mb-10">
+        <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">Build Your Responsibility Matrix</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto">Add tasks (what needs to get done) and people (devs, QA, managers, designers -- anyone involved). Then click each cell to assign who is Responsible, Accountable, Consulted, or Informed.</p>
+      </div>
+
+      <!-- Visual example -->
+      <div class="max-w-xl mx-auto mb-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+        <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
+          <p class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Example</p>
+        </div>
+        <!-- Desktop example table -->
+        <div class="hidden sm:block">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-100 dark:border-slate-800">
+                <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-400 dark:text-slate-500">Task</th>
+                <th class="px-3 py-2.5 text-center text-xs font-medium text-slate-500 dark:text-slate-400">Sarah<br><span class="font-normal text-slate-400 dark:text-slate-500">Frontend Dev</span></th>
+                <th class="px-3 py-2.5 text-center text-xs font-medium text-slate-500 dark:text-slate-400">Mike<br><span class="font-normal text-slate-400 dark:text-slate-500">QA Engineer</span></th>
+                <th class="px-3 py-2.5 text-center text-xs font-medium text-slate-500 dark:text-slate-400">Lisa<br><span class="font-normal text-slate-400 dark:text-slate-500">PM</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-50 dark:border-slate-800/50">
+                <td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Build login page</td>
+                <td class="px-3 py-2.5 text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#3b82f6] text-white text-xs font-bold">R</span></td>
+                <td class="px-3 py-2.5 text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#eab308] text-[#1a1a2e] text-xs font-bold">C</span></td>
+                <td class="px-3 py-2.5 text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#ef4444] text-white text-xs font-bold">A</span></td>
+              </tr>
+              <tr>
+                <td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Write test cases</td>
+                <td class="px-3 py-2.5 text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#6b7280] text-white text-xs font-bold">I</span></td>
+                <td class="px-3 py-2.5 text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#3b82f6] text-white text-xs font-bold">R</span></td>
+                <td class="px-3 py-2.5 text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#ef4444] text-white text-xs font-bold">A</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Mobile example cards -->
+        <div class="sm:hidden divide-y divide-slate-100 dark:divide-slate-800/50">
+          <div class="px-4 py-3">
+            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Build login page</p>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300"><span class="w-6 h-6 rounded bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">R</span> Sarah</span>
+              <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300"><span class="w-6 h-6 rounded bg-[#eab308] text-[#1a1a2e] text-xs font-bold flex items-center justify-center">C</span> Mike</span>
+              <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300"><span class="w-6 h-6 rounded bg-[#ef4444] text-white text-xs font-bold flex items-center justify-center">A</span> Lisa</span>
+            </div>
+          </div>
+          <div class="px-4 py-3">
+            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Write test cases</p>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300"><span class="w-6 h-6 rounded bg-[#6b7280] text-white text-xs font-bold flex items-center justify-center">I</span> Sarah</span>
+              <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300"><span class="w-6 h-6 rounded bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">R</span> Mike</span>
+              <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300"><span class="w-6 h-6 rounded bg-[#ef4444] text-white text-xs font-bold flex items-center justify-center">A</span> Lisa</span>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2 sm:gap-3">
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-500"><span class="w-5 h-5 rounded bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">R</span> <span class="hidden sm:inline">Does the work</span><span class="sm:hidden">Work</span></span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-500"><span class="w-5 h-5 rounded bg-[#ef4444] text-white text-xs font-bold flex items-center justify-center">A</span> <span class="hidden sm:inline">Owns the outcome</span><span class="sm:hidden">Owns</span></span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-500"><span class="w-5 h-5 rounded bg-[#eab308] text-[#1a1a2e] text-xs font-bold flex items-center justify-center">C</span> <span class="hidden sm:inline">Asked for input</span><span class="sm:hidden">Input</span></span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-500"><span class="w-5 h-5 rounded bg-[#6b7280] text-white text-xs font-bold flex items-center justify-center">I</span> <span class="hidden sm:inline">Told after</span><span class="sm:hidden">Notified</span></span>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-3">
+        <button onclick="addTask()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add Task
+        </button>
+        <button onclick="addStakeholder()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+          Add Person
+        </button>
+        <button onclick="importFromSprintBoard()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Import from Sprint
+        </button>
+        <button onclick="importMembersFromCapacity()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Import Members
+        </button>
+      </div>
+    </div>
+
+    <!-- Action Toolbar -->
+    <div id="action-bar" class="flex flex-wrap items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mb-6">
+      <button onclick="addTask()" class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span class="hidden sm:inline">Add </span>Task
+      </button>
+      <button onclick="addStakeholder()" class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+        <span class="hidden sm:inline">Add </span>Person
+      </button>
+      <!-- AI Suggest + Import from Sprint injected by JS before the spacer -->
+      <div class="flex-1"></div>
+      <button onclick="handleExportCSV()" class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span class="hidden sm:inline">Export </span>CSV
+      </button>
+    </div>
+
+    <!-- RACI Grid Section -->
+    <div id="raci-grid-section" class="mb-8 hidden">
+      <!-- Desktop table (hidden below lg) -->
+      <div id="raci-grid-wrapper" class="hidden lg:block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table id="raci-table" class="w-full border-collapse min-w-[480px]">
+            <!-- Dynamically rendered by JS -->
+          </table>
+        </div>
+      </div>
+      <!-- Mobile cards (hidden at lg+) -->
+      <div id="raci-cards" class="lg:hidden space-y-3"></div>
+    </div>
+
+    <!-- Validation warnings -->
+    <div id="validation-warnings" class="mb-6 sm:mb-8 hidden">
+      <div class="flex items-center gap-2 mb-2 sm:mb-3">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        <h2 class="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">Validation Warnings</h2>
+      </div>
+      <div id="warnings-list" class="space-y-1.5 sm:space-y-2"></div>
+    </div>
+
+    <!-- RACI Legend (inline) -->
+    <div id="raci-legend" class="hidden mb-6">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Legend</span>
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+          <span class="w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center bg-[#3b82f6] text-white text-[10px] sm:text-xs font-bold">R</span> <span class="hidden sm:inline">Responsible</span><span class="sm:hidden">Resp.</span>
+        </span>
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+          <span class="w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center bg-[#ef4444] text-white text-[10px] sm:text-xs font-bold">A</span> <span class="hidden sm:inline">Accountable</span><span class="sm:hidden">Acct.</span>
+        </span>
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+          <span class="w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center bg-[#eab308] text-[#1a1a2e] text-[10px] sm:text-xs font-bold">C</span> <span class="hidden sm:inline">Consulted</span><span class="sm:hidden">Cons.</span>
+        </span>
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+          <span class="w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center bg-[#6b7280] text-white text-[10px] sm:text-xs font-bold">I</span> <span class="hidden sm:inline">Informed</span><span class="sm:hidden">Info.</span>
+        </span>
+        <span class="text-xs text-slate-400 dark:text-slate-500 ml-auto hidden sm:inline">Click a cell to cycle through values</span>
+      </div>
+    </div>
+
+    <!-- Stakeholder summary -->
+    <div id="stakeholder-summary" class="hidden">
+      <div class="flex items-center gap-2 mb-3">
+        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <h2 class="text-base font-semibold text-slate-800 dark:text-slate-200">Stakeholder Workload</h2>
+      </div>
+      <!-- Desktop table (hidden below lg) -->
+      <div class="hidden lg:block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+        <table id="summary-table" class="w-full border-collapse">
+          <!-- Dynamically rendered by JS -->
+        </table>
+      </div>
+      <!-- Mobile cards (hidden at lg+) -->
+      <div id="summary-cards" class="lg:hidden space-y-3"></div>
+    </div>
+
+  </main>
+
+  <!-- Add/Edit Person Modal -->
+  <div id="person-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-sm">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+        <h3 id="person-modal-title" class="text-lg font-semibold text-slate-900 dark:text-white">Add Person</h3>
+        <button onclick="closeModal('person-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="person-form" class="p-5 space-y-4" onsubmit="handlePersonSubmit(event)">
+        <input type="hidden" id="person-edit-id" value="">
+        <div>
+          <label for="person-name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Name</label>
+          <input type="text" id="person-name" required placeholder="e.g. Sarah Chen"
+            class="w-full px-3 py-2 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400 focus:outline-none">
+        </div>
+        <div>
+          <label for="person-role" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role / Position</label>
+          <select id="person-role"
+            class="w-full px-3 py-2 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400 focus:outline-none">
+            <option value="Developer">Developer</option>
+            <option value="QA Engineer">QA Engineer</option>
+            <option value="Project Manager">Project Manager</option>
+            <option value="Product Owner">Product Owner</option>
+            <option value="Designer">Designer</option>
+            <option value="Tech Lead">Tech Lead</option>
+            <option value="DevOps">DevOps</option>
+            <option value="Business Analyst">Business Analyst</option>
+            <option value="Stakeholder">Stakeholder</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('person-modal')" class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-sm font-medium rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white transition-colors">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../scripts/shared.js"></script>
+  <script src="../scripts/raci-matrix.js"></script>
+  <script>
+    buildNav('raci-matrix.html');
+    document.getElementById('page-header').appendChild(
+      buildPageHeader('RACI Matrix Builder', 'Define responsibilities across tasks and stakeholders.',
+        `<div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">What is a RACI Matrix?</h3>
+          <p>RACI stands for <span class="font-medium text-slate-700 dark:text-slate-300">Responsible, Accountable, Consulted, and Informed</span>. It is a responsibility assignment chart that maps every task or deliverable to the people involved and defines exactly what role each person plays. It eliminates the "I thought someone else was handling that" problem that derails projects.</p>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">Why Use This Tool?</h3>
+          <p>Unclear ownership is one of the most common reasons tasks fall through the cracks. A RACI matrix makes accountability explicit. Every task gets exactly one Accountable person (the one who owns the outcome), while others may be Responsible (doing the work), Consulted (providing input before the work), or Informed (notified after decisions are made). This tool also validates your matrix -- it warns you if a task has no Accountable owner or if a stakeholder has no assignments at all.</p>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">When to Use It</h3>
+          <ul class="list-disc list-inside space-y-1 ml-1">
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Project kickoff</span> -- Define who owns what before work begins to prevent confusion later</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Cross-team collaboration</span> -- When multiple teams or departments contribute to a project, RACI clarifies boundaries</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Onboarding new team members</span> -- Give newcomers a clear map of who does what</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Conflict resolution</span> -- When two people think they own the same task, the matrix settles it</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">Key Concepts</h3>
+          <ul class="list-disc list-inside space-y-1 ml-1">
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">R -- Responsible</span> -- The person(s) who actually do the work. Multiple people can share responsibility for a task.</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">A -- Accountable</span> -- The single person who owns the outcome and has final sign-off authority. There must be exactly one A per task -- no more, no less.</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">C -- Consulted</span> -- Subject matter experts whose input is sought before work is done. This is a two-way conversation.</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">I -- Informed</span> -- People who need to know about the outcome but are not directly involved. This is one-way communication.</li>
+          </ul>
+        </div>`)
+    );
+    initRaci();
+  </script>
+</body>
+</html>

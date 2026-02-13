@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(()=>{if(localStorage.getItem('po-toolkit-theme')!=='light')document.documentElement.classList.add('dark')})()</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Agile Sprint Management Tool | SprintLoop - Plan, Execute & Deliver Sprints</title>
+  <meta name="description" content="Free agile sprint management tool for Product Owners and Scrum teams. Plan sprints, write user stories, track risks, run retros, and manage the full SDLC lifecycle. No sign-up required.">
+  <meta name="keywords" content="free agile sprint management tool, sprint planning, scrum tool, product owner tool, user stories, sprint board, kanban, retro, RACI matrix, risk register, agile project management">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://sprintloop.dplooy.com/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Free Agile Sprint Management Tool | SprintLoop">
+  <meta property="og:description" content="One free tool for your entire sprint lifecycle. From business docs to retros, manage every phase of agile delivery without switching apps.">
+  <meta property="og:url" content="https://sprintloop.dplooy.com/">
+  <meta property="og:site_name" content="SprintLoop">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Free Agile Sprint Management Tool | SprintLoop">
+  <meta name="twitter:description" content="Plan sprints, write stories, track risks, run retros. One free tool for the full SDLC.">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: { light: '#f8fafc', dark: '#1e293b' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/shared.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Instrument Serif', serif; }
+
+    /* Hero gradient mesh */
+    .hero-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+    }
+
+    /* Animated orbit for hero orbs */
+    @keyframes orbit-drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      25%  { transform: translate(30px, -20px) scale(1.05); }
+      50%  { transform: translate(-10px, 15px) scale(0.95); }
+      75%  { transform: translate(-25px, -10px) scale(1.02); }
+      100% { transform: translate(0, 0) scale(1); }
+    }
+    .hero-orb { animation: orbit-drift 20s ease-in-out infinite; }
+    .hero-orb-2 { animation: orbit-drift 25s ease-in-out infinite reverse; }
+    .hero-orb-3 { animation: orbit-drift 18s ease-in-out infinite; animation-delay: -5s; }
+
+    /* Grid background pattern */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,0.06) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 70%);
+      pointer-events: none;
+    }
+    .dark .hero-grid {
+      background-image:
+        linear-gradient(rgba(148,163,184,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,0.04) 1px, transparent 1px);
+    }
+
+    /* Tool flow strip */
+    .flow-strip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .flow-strip::-webkit-scrollbar { display: none; }
+    .flow-pill {
+      white-space: nowrap;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .flow-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .dark .flow-pill:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    @keyframes flow-chevron {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+    }
+    .flow-chevron { animation: flow-chevron 2s ease-in-out infinite; }
+
+    /* Journey connector line */
+    .journey-line {
+      position: absolute;
+      top: 28px;
+      left: 28px;
+      right: 28px;
+      height: 2px;
+      background: linear-gradient(90deg, #94a3b8 0%, #64748b 50%, #94a3b8 100%);
+      z-index: 0;
+    }
+    .dark .journey-line {
+      background: linear-gradient(90deg, #334155 0%, #475569 50%, #334155 100%);
+    }
+    @media (max-width: 767px) {
+      .journey-line {
+        top: 28px;
+        left: 28px;
+        width: 2px;
+        height: calc(100% - 56px);
+        right: auto;
+        background: linear-gradient(180deg, #94a3b8 0%, #64748b 50%, #94a3b8 100%);
+      }
+      .dark .journey-line {
+        background: linear-gradient(180deg, #334155 0%, #475569 50%, #334155 100%);
+      }
+    }
+
+    /* Step node pulse */
+    @keyframes node-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(100, 116, 139, 0.3); }
+      50% { box-shadow: 0 0 0 8px rgba(100, 116, 139, 0); }
+    }
+    .step-node {
+      animation: node-pulse 3s ease-in-out infinite;
+    }
+
+    /* Staggered fade-in */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up {
+      opacity: 0;
+      animation: fade-up 0.6s ease forwards;
+    }
+    .fade-up-1 { animation-delay: 0.1s; }
+    .fade-up-2 { animation-delay: 0.2s; }
+    .fade-up-3 { animation-delay: 0.3s; }
+    .fade-up-4 { animation-delay: 0.4s; }
+    .fade-up-5 { animation-delay: 0.5s; }
+
+    /* Feature card hover */
+    .feature-card {
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    .dark .feature-card:hover {
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Stat counter */
+    .stat-value {
+      background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .dark .stat-value {
+      background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Grain texture overlay */
+    .grain::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Scroll indicator bounce */
+    @keyframes gentle-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
+    }
+    .scroll-bounce {
+      animation: gentle-bounce 2s ease-in-out infinite;
+    }
+  </style>
+
+  <!-- Structured Data: SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "SprintLoop",
+    "url": "https://sprintloop.dplooy.com/",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "description": "Free agile sprint management tool for the complete SDLC lifecycle. Business docs, user stories, sprint planning, kanban board, RACI matrix, retros, and risk register.",
+    "featureList": [
+      "AI-powered business document generation",
+      "User story management with MoSCoW prioritization",
+      "Sprint capacity planning",
+      "Kanban sprint board with drag-and-drop",
+      "RACI responsibility matrix",
+      "Epic and feature traceability",
+      "Sprint retrospective and decision logging",
+      "Risk register with heatmap"
+    ]
+  }
+  </script>
+
+  <!-- Structured Data: FAQ (rich snippets) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is SprintLoop really free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, completely free. There are no paid tiers, no feature gating, and no trial periods. All 8 tools are fully functional. The only optional cost is if you choose to use AI features, which require your own OpenRouter API key."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where is my data stored?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "All data is stored in your browser's localStorage. Nothing is sent to any server. You can export everything to CSV or Markdown at any time."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need to create an account to use SprintLoop?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. There is no sign-up, no login, no account creation of any kind. Open the page, start working."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use SprintLoop for real sprint planning?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolutely. SprintLoop covers the full agile sprint lifecycle from business requirements through sprint execution and retrospectives. It supports sprint cycles, team capacity planning, kanban boards, RACI matrices, and risk tracking."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do the AI features work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AI features are powered by OpenRouter. You bring your own API key and choose your preferred model. AI can generate business documents, create acceptance criteria, provide implementation guidance, generate retro action items, and extract decisions from story discussions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the best free alternative to Jira for sprint management?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SprintLoop is a free agile sprint management tool that covers the full SDLC lifecycle without requiring sign-up or payment. It includes business docs, user stories, sprint boards, capacity planning, RACI matrices, epic tracking, retros, and risk registers -- all in one connected workspace."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I export my data from SprintLoop?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Every tool in SprintLoop exports to CSV and Markdown formats. You can take your data to Jira, Confluence, Excel, or any other tool your team uses."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Structured Data: WebSite (sitelinks search) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "SprintLoop",
+    "url": "https://sprintloop.dplooy.com/"
+  }
+  </script>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
+
+  <!-- Nav injected by JS -->
+
+  <!-- ═══════════════════════════════════════ HERO ═══════════════════════════════════════ -->
+  <section class="relative overflow-hidden border-b border-slate-200 dark:border-slate-800 grain">
+    <!-- Background layers -->
+    <div class="hero-grid"></div>
+    <div class="hero-glow hero-orb bg-blue-300 dark:bg-blue-500/20" style="position:absolute;width:700px;height:700px;top:-200px;left:-150px;opacity:0.10"></div>
+    <div class="hero-glow hero-orb-2 bg-slate-400 dark:bg-slate-400/15" style="position:absolute;width:500px;height:500px;bottom:-100px;right:-100px;opacity:0.10"></div>
+    <div class="hero-glow hero-orb-3 bg-violet-300 dark:bg-violet-500/15" style="position:absolute;width:400px;height:400px;top:40%;left:50%;opacity:0.06"></div>
+
+    <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32 pb-16 sm:pb-24 text-center">
+      <!-- Badge -->
+      <div class="fade-up fade-up-1 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md text-xs font-semibold text-slate-600 dark:text-slate-400 mb-10 shadow-sm">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 badge-pulse"></span>
+        100% Free &middot; No Sign-up &middot; Runs in Your Browser
+      </div>
+
+      <!-- H1 with SEO keyphrase -->
+      <h1 class="fade-up fade-up-2 text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.08]">
+        The <span class="font-serif italic font-normal">Free Agile Sprint<br class="hidden sm:block">Management Tool</span> That<br class="hidden lg:block">
+        Covers Your Entire SDLC
+      </h1>
+
+      <p class="fade-up fade-up-3 mt-7 text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+        From business requirements to sprint retros, manage every phase of agile delivery in one connected workspace. No accounts, no subscriptions, no vendor lock-in.
+      </p>
+
+      <!-- CTAs -->
+      <div class="fade-up fade-up-4 mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="pages/business-docs.html" class="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 text-white font-bold text-sm shadow-lg shadow-slate-900/10 dark:shadow-black/20 transition-all hover:shadow-xl hover:-translate-y-0.5">
+          Create Your First Project
+          <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a href="pages/dashboard.html" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold text-sm transition-all">
+          Open Dashboard
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10-2a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z"/></svg>
+        </a>
+      </div>
+
+      <!-- Tool flow strip -->
+      <div class="fade-up fade-up-5 mt-14 flex flex-col items-center gap-3">
+        <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Your sprint lifecycle in one place</p>
+        <div class="flow-strip justify-center flex-wrap px-2">
+          <a href="pages/business-docs.html" class="flow-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Docs
+          </a>
+          <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 flow-chevron shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <a href="pages/user-stories.html" class="flow-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Stories
+          </a>
+          <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 flow-chevron shrink-0" style="animation-delay:0.3s" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <a href="pages/capacity-planner.html" class="flow-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Capacity
+          </a>
+          <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 flow-chevron shrink-0" style="animation-delay:0.6s" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <a href="pages/sprint-board.html" class="flow-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"/></svg>
+            Sprint
+          </a>
+          <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 flow-chevron shrink-0" style="animation-delay:0.9s" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <a href="pages/retro-log.html" class="flow-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            Retro
+          </a>
+        </div>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Your data never leaves your machine.</p>
+      </div>
+
+      <!-- Scroll indicator -->
+      <div class="fade-up mt-12 scroll-bounce" style="animation-delay:0.7s">
+        <svg class="w-5 h-5 mx-auto text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ STATS BAR ═══════════════════════════════════════ -->
+  <section class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div>
+          <div class="stat-value text-3xl sm:text-4xl font-extrabold">8</div>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Connected Tools</p>
+        </div>
+        <div>
+          <div class="stat-value text-3xl sm:text-4xl font-extrabold">0</div>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Dollars to Pay</p>
+        </div>
+        <div>
+          <div class="stat-value text-3xl sm:text-4xl font-extrabold">0</div>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Data Sent to Servers</p>
+        </div>
+        <div>
+          <div class="stat-value text-3xl sm:text-4xl font-extrabold">1</div>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Unified Workflow</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ SDLC JOURNEY ═══════════════════════════════════════ -->
+  <section id="journey" class="py-20 sm:py-28">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">The Complete Sprint Lifecycle</p>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          One tool. <span class="font-serif italic font-normal">Every phase.</span>
+        </h2>
+        <p class="mt-4 text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+          Each tool feeds the next. Stories flow into sprints, sprints produce retros, retros drive decisions. Nothing gets lost between handoffs.
+        </p>
+      </div>
+
+      <!-- Journey Steps -->
+      <div class="relative">
+        <!-- Connector line (desktop: horizontal, mobile: vertical) -->
+        <div class="journey-line hidden md:block"></div>
+        <div class="journey-line md:hidden"></div>
+
+        <!-- Steps grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-6 relative z-10">
+
+          <!-- Step 1: Define -->
+          <div class="flex md:flex-col items-start md:items-center gap-4 md:gap-0 md:text-center">
+            <div class="step-node w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 shadow-sm">
+              <span class="text-lg font-bold text-slate-700 dark:text-slate-300">01</span>
+            </div>
+            <div class="md:mt-5">
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">Define</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Generate PRD and BRD from a project description using AI. Set the foundation.</p>
+              <div class="mt-3 flex md:justify-center gap-2 flex-wrap">
+                <a href="pages/business-docs.html" class="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  Business Docs
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                <a href="pages/risk-register.html" class="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  Risk Register
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Plan -->
+          <div class="flex md:flex-col items-start md:items-center gap-4 md:gap-0 md:text-center">
+            <div class="step-node w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 shadow-sm" style="animation-delay: 0.5s">
+              <span class="text-lg font-bold text-slate-700 dark:text-slate-300">02</span>
+            </div>
+            <div class="md:mt-5">
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">Plan</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Write user stories, group them into epics, assign RACI roles, and calculate team capacity.</p>
+              <div class="mt-3 flex md:justify-center gap-2 flex-wrap">
+                <a href="pages/user-stories.html" class="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  Stories
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                <a href="pages/epics.html" class="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  Epics
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                <a href="pages/raci-matrix.html" class="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  RACI
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                <a href="pages/capacity-planner.html" class="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  Capacity
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Execute -->
+          <div class="flex md:flex-col items-start md:items-center gap-4 md:gap-0 md:text-center">
+            <div class="step-node w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 shadow-sm" style="animation-delay: 1s">
+              <span class="text-lg font-bold text-slate-700 dark:text-slate-300">03</span>
+            </div>
+            <div class="md:mt-5">
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">Execute</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Import stories into a kanban sprint board. Drag across columns. Get AI-powered implementation guidance.</p>
+              <div class="mt-3 flex md:justify-center gap-2 flex-wrap">
+                <a href="pages/sprint-board.html" class="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  Sprint Board
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Reflect -->
+          <div class="flex md:flex-col items-start md:items-center gap-4 md:gap-0 md:text-center">
+            <div class="step-node w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 shadow-sm" style="animation-delay: 1.5s">
+              <span class="text-lg font-bold text-slate-700 dark:text-slate-300">04</span>
+            </div>
+            <div class="md:mt-5">
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">Reflect</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Run retros on completed sprints, log decisions from story discussions, generate AI action items.</p>
+              <div class="mt-3 flex md:justify-center gap-2 flex-wrap">
+                <a href="pages/retro-log.html" class="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  Retro & Decisions
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Flow arrows between phases (desktop only) -->
+      <div class="hidden md:flex justify-between max-w-4xl mx-auto mt-8 px-16">
+        <div class="flex items-center gap-1 text-xs font-medium text-slate-400 dark:text-slate-500">
+          <span>Requirements flow in</span>
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="flex items-center gap-1 text-xs font-medium text-slate-400 dark:text-slate-500">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          <span>Insights flow back</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ FEATURE HIGHLIGHTS ═══════════════════════════════════════ -->
+  <section class="py-20 sm:py-28 bg-slate-50/80 dark:bg-slate-900/20 border-y border-slate-200 dark:border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">What Makes It Different</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Built for how <span class="font-serif italic font-normal">real teams</span> work
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- AI-Powered -->
+        <article class="feature-card rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-6">
+          <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">AI at Every Step</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Generate business docs, create acceptance criteria, get implementation guidance on sprint items, and extract decisions from story comments. All with your own API key.</p>
+        </article>
+
+        <!-- Connected Data -->
+        <article class="feature-card rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-6">
+          <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Everything Connected</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Stories import into the sprint board. Sprint results flow into retros. Team data from capacity planning populates owner dropdowns across every tool. One source of truth.</p>
+        </article>
+
+        <!-- Privacy -->
+        <article class="feature-card rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-6">
+          <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Fully Local & Private</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">All data lives in your browser's localStorage. No servers, no accounts, no tracking. Export to CSV or Markdown anytime. Your sprint data belongs to you.</p>
+        </article>
+
+        <!-- Sprint Cycles -->
+        <article class="feature-card rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-6">
+          <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Sprint Cycle Tracking</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Create and manage multiple sprints with isolated boards. Complete sprints to freeze their state, then spin up the next one. Full sprint history preserved.</p>
+        </article>
+
+        <!-- Kanban Board -->
+        <article class="feature-card rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-6">
+          <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Drag-and-Drop Board</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Kanban-style sprint board with To Do, In Progress, Review, and Done columns. Drag stories across lanes. Status syncs back to the story forge automatically.</p>
+        </article>
+
+        <!-- Exports -->
+        <article class="feature-card rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-6">
+          <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Export Everything</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Every tool exports to CSV and Markdown. Take your data to Jira, Confluence, Excel, or wherever your team works. No walled gardens.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ TOOL GRID ═══════════════════════════════════════ -->
+  <section id="tools" class="py-20 sm:py-28">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">All 8 Tools</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Your <span class="font-serif italic font-normal">complete</span> agile toolkit
+        </h2>
+        <p class="mt-4 text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+          Each tool works independently but shares data across the suite. Start anywhere.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- Business Documents -->
+        <a href="pages/business-docs.html" class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 hover:border-slate-400 dark:hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/20">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 2v5a2 2 0 002 2h5"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Business Docs</h3>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">AI-generated PRD and BRD from your project description.</p>
+          <svg class="absolute top-5 right-5 w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <!-- User Stories -->
+        <a href="pages/user-stories.html" class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 hover:border-slate-400 dark:hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/20">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">User Stories</h3>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Write and organize stories with acceptance criteria and MoSCoW priorities.</p>
+          <svg class="absolute top-5 right-5 w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <!-- Sprint Capacity -->
+        <a href="pages/capacity-planner.html" class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 hover:border-slate-400 dark:hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/20">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Capacity Planner</h3>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Calculate team capacity and manage sprint commitment levels.</p>
+          <svg class="absolute top-5 right-5 w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <!-- Sprint Board -->
+        <a href="pages/sprint-board.html" class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 hover:border-slate-400 dark:hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/20">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Sprint Board</h3>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Kanban board with drag-and-drop, sprint cycles, and AI guidance.</p>
+          <svg class="absolute top-5 right-5 w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <!-- RACI Matrix -->
+        <a href="pages/raci-matrix.html" class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 hover:border-slate-400 dark:hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/20">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">RACI Matrix</h3>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Define responsibilities with color-coded cells and validation.</p>
+          <svg class="absolute top-5 right-5 w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <!-- Epic Tracker -->
+        <a href="pages/epics.html" class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 hover:border-slate-400 dark:hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/20">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Epic Tracker</h3>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Track epics with linked stories, coverage heatmaps, and gap analysis.</p>
+          <svg class="absolute top-5 right-5 w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <!-- Retro & Decision Log -->
+        <a href="pages/retro-log.html" class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 hover:border-slate-400 dark:hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/20">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Retro & Decisions</h3>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Run sprint retros and maintain a searchable decision history.</p>
+          <svg class="absolute top-5 right-5 w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <!-- Risk Register -->
+        <a href="pages/risk-register.html" class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 hover:border-slate-400 dark:hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/20">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Risk Register</h3>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Track risks with probability/impact scoring and a visual heatmap.</p>
+          <svg class="absolute top-5 right-5 w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ HOW DATA FLOWS ═══════════════════════════════════════ -->
+  <section class="py-20 sm:py-28 border-t border-slate-200 dark:border-slate-800">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Connected by Design</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Data flows <span class="font-serif italic font-normal">automatically</span>
+        </h2>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Flow 1 -->
+        <div class="flex items-start gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white">Stories to Sprint Board</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">User stories import directly into your sprint board, grouped by epic. Priorities and story points carry over.</p>
+          </div>
+        </div>
+
+        <!-- Flow 2 -->
+        <div class="flex items-start gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white">Sprint Results to Retro</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Completed sprint items auto-populate the "Went Well" column. Incomplete items land in "Didn't Go Well" with full metadata.</p>
+          </div>
+        </div>
+
+        <!-- Flow 3 -->
+        <div class="flex items-start gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white">Story Comments to Decisions</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">AI extracts key decisions from sprint story discussions. Owner auto-assigned from the story assignee.</p>
+          </div>
+        </div>
+
+        <!-- Flow 4 -->
+        <div class="flex items-start gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white">Team Data Everywhere</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Define your team once in Capacity Planner. Their names and roles populate owner dropdowns across every tool.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ FINAL CTA ═══════════════════════════════════════ -->
+  <section class="relative overflow-hidden border-t border-slate-200 dark:border-slate-800 grain">
+    <div class="hero-glow bg-slate-400 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style="position:absolute"></div>
+
+    <div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        Stop juggling <span class="font-serif italic font-normal">five different tools</span>
+      </h2>
+      <p class="mt-5 text-lg text-slate-600 dark:text-slate-300 max-w-xl mx-auto">
+        Your free agile sprint management tool is one click away. No credit card, no trial expiry, no "upgrade to unlock" walls.
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="pages/business-docs.html" class="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 text-white font-bold text-base shadow-lg shadow-slate-900/10 dark:shadow-black/20 transition-all hover:shadow-xl hover:-translate-y-0.5">
+          Launch SprintLoop
+          <svg class="w-5 h-5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+      <p class="mt-6 text-xs text-slate-400 dark:text-slate-500">
+        Works on Chrome, Firefox, Safari, and Edge. No installation needed.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ WHO IS THIS FOR (SEO) ═══════════════════════════════════════ -->
+  <section class="py-20 sm:py-28 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/20">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Built For Your Role</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Who uses <span class="font-serif italic font-normal">SprintLoop?</span>
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 text-center">
+          <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">Product Owners</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Write PRDs, manage backlogs, prioritize stories, and track sprint delivery end-to-end.</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 text-center">
+          <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">Scrum Masters</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Plan sprint capacity, run retrospectives, track action items, and facilitate team ceremonies.</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 text-center">
+          <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">Business Analysts</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Generate BRDs, define acceptance criteria, build RACI matrices, and trace requirements to epics.</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 text-center">
+          <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">Project Managers</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Assess risks, assign responsibilities, monitor sprint progress, and log key decisions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ FAQ (SEO) ═══════════════════════════════════════ -->
+  <section class="py-16 sm:py-20 border-t border-slate-200 dark:border-slate-800">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight text-center mb-10">
+        Frequently asked questions
+      </h2>
+
+      <div class="space-y-4">
+        <details class="group">
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-900 dark:text-white py-3 border-b border-slate-200 dark:border-slate-800">
+            Is SprintLoop really free?
+            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <p class="pt-3 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Yes, completely free. There are no paid tiers, no feature gating, and no trial periods. All 8 tools are fully functional. The only optional cost is if you choose to use AI features, which require your own OpenRouter API key.</p>
+        </details>
+
+        <details class="group">
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-900 dark:text-white py-3 border-b border-slate-200 dark:border-slate-800">
+            Where is my data stored?
+            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <p class="pt-3 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">All data is stored in your browser's localStorage. Nothing is sent to any server. You can export everything to CSV or Markdown at any time. Clearing your browser data will erase your projects, so export regularly.</p>
+        </details>
+
+        <details class="group">
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-900 dark:text-white py-3 border-b border-slate-200 dark:border-slate-800">
+            Do I need to create an account?
+            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <p class="pt-3 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">No. There is no sign-up, no login, no account creation of any kind. Open the page, start working. That's it.</p>
+        </details>
+
+        <details class="group">
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-900 dark:text-white py-3 border-b border-slate-200 dark:border-slate-800">
+            Can I use this for real sprint planning?
+            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <p class="pt-3 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Absolutely. SprintLoop covers the full agile sprint lifecycle from business requirements through sprint execution and retrospectives. It supports sprint cycles, team capacity planning, kanban boards, RACI matrices, and risk tracking. It's built for Product Owners, Scrum Masters, and Business Analysts managing real projects.</p>
+        </details>
+
+        <details class="group">
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-900 dark:text-white py-3 border-b border-slate-200 dark:border-slate-800">
+            How do the AI features work?
+            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <p class="pt-3 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">AI features are powered by OpenRouter. You bring your own API key and choose your preferred model. AI can generate business documents, create acceptance criteria for stories, provide implementation guidance on sprint board items, generate retro action items, and extract decisions from story discussions.</p>
+        </details>
+
+        <details class="group">
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-900 dark:text-white py-3 border-b border-slate-200 dark:border-slate-800">
+            What is the best free alternative to Jira for sprint management?
+            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <p class="pt-3 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">SprintLoop is a free agile sprint management tool that covers the full SDLC without requiring sign-up or payment. Unlike Jira, it runs entirely in your browser with no server dependency. It includes business docs, user stories, sprint boards, capacity planning, RACI matrices, epic tracking, retros, and risk registers -- all in one connected workspace.</p>
+        </details>
+
+        <details class="group">
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-900 dark:text-white py-3 border-b border-slate-200 dark:border-slate-800">
+            Can I export my data from SprintLoop?
+            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <p class="pt-3 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Yes. Every tool exports to CSV and Markdown formats. Take your data to Jira, Confluence, Excel, or wherever your team works. No walled gardens, no vendor lock-in.</p>
+        </details>
+
+        <details class="group">
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-900 dark:text-white py-3 border-b border-slate-200 dark:border-slate-800">
+            Does SprintLoop work on mobile?
+            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <p class="pt-3 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">SprintLoop is fully responsive and works on Chrome, Firefox, Safari, and Edge across desktop, tablet, and mobile. All tools adapt their layout for smaller screens with mobile-friendly navigation and touch-compatible interactions.</p>
+        </details>
+
+        <details class="group">
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-900 dark:text-white py-3 border-b border-slate-200 dark:border-slate-800">
+            How are the tools connected?
+            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <p class="pt-3 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">User stories import into the sprint board grouped by epic. Completed sprint items auto-populate retro columns. AI extracts decisions from story comments. Team members defined in Capacity Planner populate owner dropdowns everywhere. Each tool can work independently, but together they form one continuous workflow.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ FOOTER ═══════════════════════════════════════ -->
+  <footer class="border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14">
+
+      <!-- Brand centered -->
+      <div class="text-center mb-10">
+        <div class="flex items-center justify-center gap-2 mb-2">
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold">SL</span>
+          <span class="text-sm font-bold text-slate-900 dark:text-white">SprintLoop</span>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Free agile sprint management tool for the complete SDLC lifecycle.</p>
+      </div>
+
+      <!-- 3-column tool nav -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center max-w-3xl mx-auto">
+
+        <!-- Define -->
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Define</p>
+          <nav class="flex flex-col gap-2" aria-label="Define tools">
+            <a href="pages/business-docs.html" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Business Docs</a>
+            <a href="pages/risk-register.html" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Risk Register</a>
+          </nav>
+        </div>
+
+        <!-- Plan -->
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Plan</p>
+          <nav class="flex flex-col gap-2" aria-label="Plan tools">
+            <a href="pages/user-stories.html" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">User Stories</a>
+            <a href="pages/epics.html" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Epic Tracker</a>
+            <a href="pages/capacity-planner.html" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Capacity Planner</a>
+            <a href="pages/raci-matrix.html" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">RACI Matrix</a>
+          </nav>
+        </div>
+
+        <!-- Execute & Reflect -->
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Execute & Reflect</p>
+          <nav class="flex flex-col gap-2" aria-label="Execute and reflect tools">
+            <a href="pages/sprint-board.html" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Sprint Board</a>
+            <a href="pages/retro-log.html" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Retro & Decisions</a>
+          </nav>
+        </div>
+
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="mt-10 pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+        <p class="text-xs text-slate-400 dark:text-slate-500">SprintLoop &middot; Free Agile Sprint Management Tool</p>
+        <span class="hidden sm:inline text-slate-300 dark:text-slate-700">&middot;</span>
+        <p class="text-xs text-slate-400 dark:text-slate-500">100% local. Your data never leaves your browser.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="scripts/shared.js"></script>
+  <script>buildNav();</script>
+</body>
+</html>

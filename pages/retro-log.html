@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(()=>{if(localStorage.getItem('po-toolkit-theme')!=='light')document.documentElement.classList.add('dark')})()</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprint Retrospective & Decision Log - SprintLoop | Free Retro Tool</title>
+  <meta name="description" content="Run sprint retrospectives with three columns, AI-generated action items, and a searchable decision history. Free agile retrospective tool.">
+  <link rel="canonical" href="https://sprintloop.dplooy.com/pages/retro-log.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: { light: '#f8fafc', dark: '#1e293b' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/shared.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Instrument Serif', serif; }
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 4px 4px 0 0;
+    }
+    .stat-card-blue::before { background: #3b82f6; }
+    .stat-card-emerald::before { background: #10b981; }
+    .stat-card-amber::before { background: #f59e0b; }
+    .stat-card-rose::before { background: #f43f5e; }
+  </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen">
+
+  <!-- Nav injected by JS -->
+
+  <!-- Page header injected by JS -->
+  <div id="page-header"></div>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+    <!-- Tab Pills -->
+    <div class="flex items-center justify-center gap-2 py-4 border-b border-slate-200 dark:border-slate-800">
+      <button id="tab-retro" onclick="switchTab('retro')" class="px-4 py-2 rounded-full text-sm font-semibold transition-colors bg-slate-800 dark:bg-white dark:text-slate-900 text-white">
+        Retro Board
+      </button>
+      <button id="tab-decisions" onclick="switchTab('decisions')" class="px-4 py-2 rounded-full text-sm font-semibold transition-colors bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+        Decision Log
+      </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- TAB 1: Retro Board                      -->
+    <!-- ═══════════════════════════════════════ -->
+    <div id="panel-retro" class="mt-6">
+
+      <!-- Retro Stats Dashboard -->
+      <div id="retro-stats-dashboard" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 hidden">
+        <div class="stat-card stat-card-blue rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Total Cards</span>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+          </div>
+          <p id="retro-stat-total" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Across all columns</p>
+        </div>
+        <div class="stat-card stat-card-emerald rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Went Well</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+          </div>
+          <p id="retro-stat-well" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Positive items</p>
+        </div>
+        <div class="stat-card stat-card-amber rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Needs Work</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            </div>
+          </div>
+          <p id="retro-stat-improve" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Improvement items</p>
+        </div>
+        <div class="stat-card stat-card-rose rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Actions</span>
+            <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+          </div>
+          <p id="retro-stat-actions" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+          <p id="retro-stat-actions-label" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Action items</p>
+        </div>
+      </div>
+
+      <!-- Mobile Action Bar (Retro) -->
+      <div class="sm:hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5 space-y-2 mb-6">
+        <div class="flex items-center gap-2">
+          <select id="session-select-mobile" onchange="syncRetroMobileSession()"
+            class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            <option value="">-- Session --</option>
+          </select>
+          <button onclick="createNewSession()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            New
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="importSprintResults()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Import
+          </button>
+          <button onclick="exportRetroMarkdown()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Export
+          </button>
+          <button id="btn-ai-retro-summary-mobile" onclick="handleAiRetroSummarize()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-sm font-semibold transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            AI
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-delete-session-mobile" onclick="deleteCurrentSession()" class="hidden flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Delete Session
+          </button>
+        </div>
+      </div>
+
+      <!-- Desktop Action Bar (Retro) -->
+      <div id="retro-action-bar" class="hidden sm:flex flex-wrap items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mb-6">
+        <select id="session-select" onchange="handleSessionChange()"
+          class="px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <option value="">-- Select Session --</option>
+        </select>
+        <button onclick="createNewSession()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New Session
+        </button>
+        <button onclick="importSprintResults()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Import Sprint Results
+        </button>
+
+        <div class="flex-1"></div>
+
+        <button onclick="exportRetroMarkdown()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export MD
+        </button>
+        <button id="btn-ai-retro-summary" onclick="handleAiRetroSummarize()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          AI Summarize
+        </button>
+        <button id="btn-delete-session" onclick="deleteCurrentSession()" class="hidden inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          Delete Session
+        </button>
+      </div>
+
+      <!-- Three Columns -->
+      <div id="retro-columns" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Went Well -->
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+          <div class="border-t-4 border-emerald-500 px-4 py-3 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Went Well</h3>
+            <button onclick="openRetroCardModal('wentWell')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Add Card
+            </button>
+          </div>
+          <div id="col-wentWell" class="p-4 space-y-3 min-h-[200px]"></div>
+        </div>
+
+        <!-- Didn't Go Well -->
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+          <div class="border-t-4 border-red-500 px-4 py-3 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Didn't Go Well</h3>
+            <button onclick="openRetroCardModal('didntGoWell')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-semibold hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Add Card
+            </button>
+          </div>
+          <div id="col-didntGoWell" class="p-4 space-y-3 min-h-[200px]"></div>
+        </div>
+
+        <!-- Action Items -->
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+          <div class="border-t-4 border-blue-500 px-4 py-3 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Action Items</h3>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-ai-actions" onclick="handleAiGenerateActions()" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                AI
+              </button>
+              <button onclick="openActionItemModal()" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Add
+              </button>
+            </div>
+          </div>
+          <div id="col-actionItems" class="p-4 space-y-3 min-h-[200px]"></div>
+        </div>
+
+      </div>
+
+      <!-- Retro Empty State -->
+      <div id="retro-empty" class="hidden mt-16 text-center">
+        <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-1">No retro sessions yet</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-500 mb-6">Create a new session to start your retrospective.</p>
+        <button onclick="createNewSession()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New Session
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- TAB 2: Decision Log                     -->
+    <!-- ═══════════════════════════════════════ -->
+    <div id="panel-decisions" class="mt-6 hidden">
+
+      <!-- Decision Stats Dashboard -->
+      <div id="decision-stats-dashboard" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 hidden">
+        <div class="stat-card stat-card-blue rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Total</span>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+          </div>
+          <p id="decision-stat-total" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Decisions recorded</p>
+        </div>
+        <div class="stat-card stat-card-emerald rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Active</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+          </div>
+          <p id="decision-stat-active" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Currently active</p>
+        </div>
+        <div class="stat-card stat-card-amber rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Superseded</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </div>
+          </div>
+          <p id="decision-stat-superseded" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Replaced by newer</p>
+        </div>
+        <div class="stat-card stat-card-rose rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Reversed</span>
+            <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            </div>
+          </div>
+          <p id="decision-stat-reversed" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Rolled back</p>
+        </div>
+      </div>
+
+      <!-- Mobile Action Bar (Decisions) -->
+      <div class="sm:hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5 space-y-2 mb-6">
+        <div class="flex items-center gap-2">
+          <button onclick="openDecisionForm()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add
+          </button>
+          <button id="btn-ai-import-decisions-mobile" onclick="handleAiImportDecisions()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-sm font-semibold transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            AI
+          </button>
+          <button onclick="exportDecisionCSV()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            CSV
+          </button>
+          <button onclick="exportDecisionMarkdown()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            MD
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="decision-search-mobile" type="text" placeholder="Search..." oninput="syncDecisionMobileFilter()"
+            class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <select id="filter-status-mobile" onchange="syncDecisionMobileFilter()"
+            class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            <option value="">Status</option>
+            <option value="Active">Active</option>
+            <option value="Superseded">Superseded</option>
+            <option value="Reversed">Reversed</option>
+          </select>
+          <select id="filter-owner-mobile" onchange="syncDecisionMobileFilter()"
+            class="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            <option value="">Owner</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Desktop Action Bar (Decisions) -->
+      <div id="decision-action-bar" class="hidden sm:flex flex-wrap items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mb-6">
+        <button onclick="openDecisionForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add Decision
+        </button>
+        <button id="btn-ai-import-decisions" onclick="handleAiImportDecisions()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          AI from Sprint
+        </button>
+
+        <div class="flex-1"></div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <input id="decision-search" type="text" placeholder="Search decisions..." oninput="renderDecisions()"
+            class="w-64 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          <select id="filter-owner" onchange="renderDecisions()"
+            class="min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            <option value="">All Owners</option>
+          </select>
+          <select id="filter-status" onchange="renderDecisions()"
+            class="min-w-0 px-3 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            <option value="">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Superseded">Superseded</option>
+            <option value="Reversed">Reversed</option>
+          </select>
+        </div>
+
+        <button onclick="exportDecisionCSV()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export CSV
+        </button>
+        <button onclick="exportDecisionMarkdown()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export MD
+        </button>
+      </div>
+
+      <!-- Decision Cards Grid -->
+      <div id="decision-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+
+      <!-- Decision Empty State -->
+      <div id="decision-empty" class="hidden mt-16 text-center">
+        <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-1">No decisions recorded</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-500 mb-6">Start documenting your decisions to build an institutional memory.</p>
+        <button onclick="openDecisionForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add Decision
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Retro Card Modal (Went Well / Didn't Go Well) -->
+  <div id="retro-card-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4" onclick="if(event.target===event.currentTarget)closeModal('retro-card-modal')">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+        <h2 id="retro-card-modal-title" class="text-lg font-bold text-slate-900 dark:text-white">Add Card</h2>
+        <button onclick="closeModal('retro-card-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="retro-card-form" onsubmit="handleSaveRetroCard(event)" class="px-6 py-5 space-y-4">
+        <input type="hidden" id="retro-card-column" value="">
+        <input type="hidden" id="retro-card-id" value="">
+        <div>
+          <label for="retro-card-text" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Card Text</label>
+          <textarea id="retro-card-text" required rows="3" placeholder="What happened?"
+            class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y"></textarea>
+        </div>
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <button type="button" onclick="closeModal('retro-card-modal')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">Add Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Action Item Modal -->
+  <div id="action-item-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4" onclick="if(event.target===event.currentTarget)closeModal('action-item-modal')">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+        <h2 id="action-item-modal-title" class="text-lg font-bold text-slate-900 dark:text-white">New Action Item</h2>
+        <button onclick="closeModal('action-item-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="action-item-form" onsubmit="handleSaveActionItem(event)" class="px-6 py-5 space-y-4">
+        <input type="hidden" id="action-item-id" value="">
+        <div>
+          <label for="action-item-text" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+          <textarea id="action-item-text" required rows="3" placeholder="What needs to be done?"
+            class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="action-item-owner" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Owner</label>
+            <select id="action-item-owner"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+              <option value="">Unassigned</option>
+            </select>
+          </div>
+          <div>
+            <label for="action-item-due" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
+            <input type="date" id="action-item-due"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <button type="button" onclick="closeModal('action-item-modal')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+          <button type="submit" id="action-item-submit-btn" class="px-5 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">Add Action Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Decision Form Modal (sticky header/footer) -->
+  <div id="decision-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4" onclick="if(event.target===event.currentTarget)closeModal('decision-modal')">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <h2 id="decision-modal-title" class="text-lg font-bold text-slate-900 dark:text-white">New Decision</h2>
+        <button onclick="closeModal('decision-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="decision-form" onsubmit="handleSaveDecision(event)" class="flex flex-col flex-1 min-h-0">
+        <div class="px-6 py-5 space-y-5 overflow-y-auto flex-1 min-h-0">
+          <input type="hidden" id="decision-id" value="">
+
+          <!-- Date -->
+          <div>
+            <label for="decision-date" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date</label>
+            <input type="date" id="decision-date" required
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          </div>
+
+          <!-- Context -->
+          <div>
+            <label for="decision-context" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Context</label>
+            <textarea id="decision-context" required rows="3" placeholder="What prompted this decision?"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y"></textarea>
+          </div>
+
+          <!-- Decision Made -->
+          <div>
+            <label for="decision-decision" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Decision Made</label>
+            <textarea id="decision-decision" required rows="3" placeholder="What was decided?"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y"></textarea>
+          </div>
+
+          <!-- Rationale -->
+          <div>
+            <label for="decision-rationale" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Rationale</label>
+            <textarea id="decision-rationale" required rows="3" placeholder="Why was this chosen?"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y"></textarea>
+          </div>
+
+          <!-- Sprint + Owner + Status row -->
+          <div>
+            <label for="decision-sprint" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sprint <span class="font-normal text-slate-400">(optional)</span></label>
+            <select id="decision-sprint"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+              <option value="">No sprint</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="decision-owner" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Owner</label>
+              <select id="decision-owner" required
+                class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                <option value="">Select owner</option>
+              </select>
+            </div>
+            <div>
+              <label for="decision-status" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
+              <select id="decision-status" onchange="toggleStatusRemarks()"
+                class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                <option value="Active" selected>Active</option>
+                <option value="Superseded">Superseded</option>
+                <option value="Reversed">Reversed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Status Remarks (shown for Superseded / Reversed) -->
+          <div id="status-remarks-section" class="hidden">
+            <label for="decision-remarks" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Reason for status change</label>
+            <textarea id="decision-remarks" rows="2" placeholder="Why was this decision superseded or reversed?"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y"></textarea>
+          </div>
+        </div>
+
+        <!-- Sticky footer -->
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
+          <button type="button" onclick="closeModal('decision-modal')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">Save Decision</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Decision Detail Modal -->
+  <div id="decision-detail-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4" onclick="if(event.target===event.currentTarget)closeModal('decision-detail-modal')">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span id="detail-date" class="font-mono text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded"></span>
+          <span id="detail-status"></span>
+        </div>
+        <button onclick="closeModal('decision-detail-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-6 py-5 overflow-y-auto flex-1 min-h-0 space-y-5">
+        <div>
+          <h2 id="detail-decision" class="text-lg font-bold text-slate-900 dark:text-white"></h2>
+          <p id="detail-owner" class="text-sm text-slate-500 dark:text-slate-400 mt-1"></p>
+        </div>
+        <div>
+          <p class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Context</p>
+          <p id="detail-context" class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap"></p>
+        </div>
+        <div>
+          <p class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Rationale</p>
+          <p id="detail-rationale" class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap"></p>
+        </div>
+        <div id="detail-remarks-section" class="hidden">
+          <p class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Status Remarks</p>
+          <p id="detail-remarks" class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap"></p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
+        <button onclick="closeModal('decision-detail-modal')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Close</button>
+        <button id="detail-edit-btn" class="px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">Edit Decision</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../scripts/shared.js"></script>
+  <script src="../scripts/retro-log.js"></script>
+</body>
+</html>

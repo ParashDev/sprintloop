@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(()=>{if(localStorage.getItem('po-toolkit-theme')!=='light')document.documentElement.classList.add('dark')})()</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Business Document Generator - SprintLoop | Free PRD & BRD Tool</title>
+  <meta name="description" content="Generate professional PRD and BRD documents from a project description using AI. Free business requirements tool for Product Owners and Business Analysts.">
+  <link rel="canonical" href="https://sprintloop.dplooy.com/pages/business-docs.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: { light: '#f8fafc', dark: '#1e293b' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/shared.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Instrument Serif', serif; }
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 4px 4px 0 0;
+    }
+    .stat-card-blue::before { background: #3b82f6; }
+    .stat-card-indigo::before { background: #6366f1; }
+    .stat-card-violet::before { background: #8b5cf6; }
+    .stat-card-emerald::before { background: #10b981; }
+    .doc-section-toggle:hover .chevron-icon { transform: translateX(2px); }
+    .doc-section-content { transition: max-height 0.2s ease-out; }
+  </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen">
+
+  <!-- Nav injected by JS -->
+
+  <!-- Page header injected by JS -->
+  <div id="page-header"></div>
+
+  <!-- Main content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+    <!-- Stats Dashboard -->
+    <div id="stats-dashboard" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="stat-card stat-card-blue rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Projects</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          </div>
+        </div>
+        <p id="stat-project" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Total projects</p>
+      </div>
+      <div class="stat-card stat-card-indigo rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">PRD</span>
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+        </div>
+        <p id="stat-prd" class="text-2xl font-bold text-slate-900 dark:text-white">--</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Product Requirements</p>
+      </div>
+      <div class="stat-card stat-card-violet rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">BRD</span>
+          <div class="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+        </div>
+        <p id="stat-brd" class="text-2xl font-bold text-slate-900 dark:text-white">--</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Business Requirements</p>
+      </div>
+      <div class="stat-card stat-card-emerald rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Sections</span>
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          </div>
+        </div>
+        <p id="stat-sections" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Total sections</p>
+      </div>
+    </div>
+
+    <!-- Project Switcher -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-base font-semibold text-slate-800 dark:text-slate-200">Projects</h2>
+        <div class="flex items-center gap-2">
+          <button onclick="deleteProject()" id="btn-delete-project" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Delete
+          </button>
+          <button onclick="createNewProject()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-xs font-semibold transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            New Project
+          </button>
+        </div>
+      </div>
+      <div class="overflow-x-auto -m-1 p-1">
+        <div id="project-switcher-list" class="flex items-stretch gap-3">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Project Description Section (collapsible) -->
+    <div id="project-section" class="mb-8">
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+        <button onclick="toggleProjectSection()" class="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+          <span class="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            Project Description
+          </span>
+          <svg id="project-section-chevron" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div id="project-section-body" class="hidden">
+          <div class="px-5 pb-5 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-4">
+            <div>
+              <label for="project-name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Project Name</label>
+              <input type="text" id="project-name" placeholder="e.g., Customer Portal Redesign"
+                class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            </div>
+            <div>
+              <label for="project-description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+              <textarea id="project-description" rows="6" placeholder="Describe the project in detail -- what is it, who is it for, what problem does it solve, what are the key features..."
+                class="w-full px-3 py-2 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y"></textarea>
+            </div>
+            <div class="flex justify-end">
+              <button onclick="saveProjectDescription()" class="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Save Description
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Action Bar -->
+    <div class="sm:hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5 space-y-2 mb-6">
+      <div class="flex items-center gap-2">
+        <button id="btn-gen-prd-mobile" onclick="generatePRD()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          PRD
+        </button>
+        <button id="btn-gen-brd-mobile" onclick="generateBRD()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          BRD
+        </button>
+        <button onclick="openExportMenu()" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Desktop Action Bar -->
+    <div id="action-bar" class="hidden sm:flex flex-wrap items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mb-6">
+      <button id="btn-gen-prd" onclick="generatePRD()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-semibold transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        Generate PRD
+      </button>
+      <button id="btn-gen-brd" onclick="generateBRD()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        Generate BRD
+      </button>
+
+      <div class="flex-1"></div>
+
+      <button onclick="exportPRD()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Export PRD
+      </button>
+      <button onclick="exportBRD()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Export BRD
+      </button>
+    </div>
+
+    <!-- Document Display -->
+    <div id="docs-section">
+      <!-- Tab bar for mobile -->
+      <div class="sm:hidden flex border-b border-slate-200 dark:border-slate-800 mb-4">
+        <button id="tab-prd" onclick="switchDocTab('prd')" class="flex-1 px-4 py-3 text-sm font-semibold text-center border-b-2 transition-colors">PRD</button>
+        <button id="tab-brd" onclick="switchDocTab('brd')" class="flex-1 px-4 py-3 text-sm font-semibold text-center border-b-2 transition-colors">BRD</button>
+      </div>
+
+      <!-- Side-by-side on desktop, tabbed on mobile -->
+      <div class="sm:grid sm:grid-cols-2 sm:gap-6">
+        <!-- PRD Column -->
+        <div id="prd-column">
+          <h2 class="hidden sm:block text-base font-semibold text-slate-800 dark:text-slate-200 mb-4">Product Requirements Document</h2>
+          <div id="prd-content" class="space-y-3">
+            <!-- Rendered by JS -->
+          </div>
+          <div id="prd-empty" class="hidden rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
+            <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <p class="text-sm font-medium text-slate-600 dark:text-slate-400">No PRD generated yet</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Save a project description, then click Generate PRD</p>
+          </div>
+        </div>
+
+        <!-- BRD Column -->
+        <div id="brd-column">
+          <h2 class="hidden sm:block text-base font-semibold text-slate-800 dark:text-slate-200 mb-4">Business Requirements Document</h2>
+          <div id="brd-content" class="space-y-3">
+            <!-- Rendered by JS -->
+          </div>
+          <div id="brd-empty" class="hidden rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
+            <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <p class="text-sm font-medium text-slate-600 dark:text-slate-400">No BRD generated yet</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Save a project description, then click Generate BRD</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state (no project at all) -->
+    <div id="empty-state" class="hidden text-center py-20">
+      <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-1">No project selected</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">Create a new project to get started. Each project gets its own PRD and BRD. The active project's context is shared with tools like the Risk Register for smarter AI analysis.</p>
+      <button onclick="createNewProject()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        New Project
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Export menu modal (mobile) -->
+  <div id="export-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4" onclick="closeModal('export-modal')">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-xs" onclick="event.stopPropagation()">
+      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white">Export Documents</h2>
+      </div>
+      <div class="p-4 space-y-2">
+        <button onclick="exportPRD(); closeModal('export-modal')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export PRD as Markdown
+        </button>
+        <button onclick="exportBRD(); closeModal('export-modal')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export BRD as Markdown
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../scripts/shared.js"></script>
+  <script src="../scripts/business-docs.js"></script>
+  <script>
+    buildNav('business-docs.html');
+    document.getElementById('page-header').appendChild(
+      buildPageHeader('Business Documents', 'Generate PRD and BRD from your project description using AI.',
+        `<div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">What are PRD and BRD?</h3>
+          <p>A <span class="font-medium text-slate-700 dark:text-slate-300">Product Requirements Document (PRD)</span> defines what a product should do -- features, user flows, success metrics, and technical constraints. A <span class="font-medium text-slate-700 dark:text-slate-300">Business Requirements Document (BRD)</span> defines why the product exists -- the business problem, objectives, stakeholders, and success criteria from an organizational perspective.</p>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">How to Use This Tool</h3>
+          <ol class="list-decimal list-inside space-y-1 ml-1">
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Describe your project</span> -- Enter a project name and a detailed description of what you are building</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Generate documents</span> -- Click Generate PRD or Generate BRD to have AI create structured requirements documents</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Edit sections</span> -- Click any section to edit its content inline. Your changes are saved automatically</li>
+            <li><span class="font-medium text-slate-700 dark:text-slate-300">Export</span> -- Download either document as Markdown for sharing or inclusion in your project wiki</li>
+          </ol>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">Integration with Other Tools</h3>
+          <p>Your project description and generated documents are automatically shared with other PO Toolkit tools. The <span class="font-medium text-slate-700 dark:text-slate-300">Risk Register</span> will use this context when identifying risks with AI, producing more specific and relevant risk analysis instead of generic results.</p>
+        </div>`)
+    );
+    initBusinessDocs();
+  </script>
+</body>
+</html>
