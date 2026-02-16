@@ -1162,14 +1162,15 @@ async function submitAiImportDecisions() {
     let userContent = 'Extract decisions from these sprint stories and their discussion comments:\n\n' +
       storyData.map((s, i) => (i + 1) + '. Story: ' + s.story + '\n   Comments:\n   ' + s.comments).join('\n\n');
 
+    let systemContent = `You are a product owner extracting decisions from sprint story comments. Each story has comments from team discussions or AI technical recommendations made during the sprint.`;
+
     if (extraInstructions) {
-      userContent += '\n\nAdditional instructions:\n' + extraInstructions;
+      systemContent += '\n\nIMPORTANT -- The user has provided specific instructions. ' +
+        'You MUST follow these instructions exactly, even if they contradict the default rules below. ' +
+        'These take top priority:\n' + extraInstructions;
     }
 
-    const result = await callOpenRouterAPI([
-      {
-        role: 'system',
-        content: `You are a product owner extracting decisions from sprint story comments. Each story has comments from team discussions or AI technical recommendations made during the sprint.
+    systemContent += `
 
 Your job:
 - For EVERY story provided, extract at least one decision. Do not skip any story.
@@ -1179,7 +1180,12 @@ Your job:
 - Be specific. BAD: "Use localStorage for data." GOOD: "Store project data in localStorage with per-project namespaced keys to avoid collisions, chosen over IndexedDB for simplicity."
 - The "rationale" field must explain WHY this approach was chosen based on what the comments say.
 
-Return ONLY a valid JSON array. One object per story minimum: [{"decision": "specific choice made", "context": "what problem/story prompted this", "rationale": "why this approach was chosen per the discussion"}]. Do not wrap in markdown code blocks.` + projectCtx
+Return ONLY a valid JSON array. One object per story minimum: [{"decision": "specific choice made", "context": "what problem/story prompted this", "rationale": "why this approach was chosen per the discussion"}]. Do not wrap in markdown code blocks.` + projectCtx;
+
+    const result = await callOpenRouterAPI([
+      {
+        role: 'system',
+        content: systemContent
       },
       {
         role: 'user',
@@ -1397,14 +1403,15 @@ async function submitAiGenerateActions() {
       userContent += '\n\nTeam Members:\n' + teamText;
     }
 
+    let actionsSystemContent = `You are a senior agile coach analyzing a sprint retrospective. Your job is to generate actionable improvement items following industry-standard retrospective analysis.`;
+
     if (extraInstructions) {
-      userContent += '\n\nAdditional instructions:\n' + extraInstructions;
+      actionsSystemContent += '\n\nIMPORTANT -- The user has provided specific instructions. ' +
+        'You MUST follow these instructions exactly, even if they contradict the default rules below. ' +
+        'These take top priority:\n' + extraInstructions;
     }
 
-    const result = await callOpenRouterAPI([
-      {
-        role: 'system',
-        content: `You are a senior agile coach analyzing a sprint retrospective. Your job is to generate actionable improvement items following industry-standard retrospective analysis.
+    actionsSystemContent += `
 
 Analysis approach:
 1. PATTERN RECOGNITION: Look for recurring themes across "Went Well" and "Didn't Go Well" items. Recurring pain points need systemic fixes, not band-aids.
@@ -1415,7 +1422,12 @@ Analysis approach:
 6. OWNER SUGGESTIONS: If team members are provided, suggest the most appropriate owner based on their role and the action type. Use assignee info from cards to identify who was involved.
 7. USE STORY METADATA: Items may include [Assignee, Story Points, Priority, Sprint Status] in brackets. Factor this into your analysis -- high-point incomplete stories are bigger risks, patterns in assignees reveal workload issues, priority mismatches (high priority stuck, low priority done) reveal planning gaps.
 
-Return ONLY valid JSON array of objects: [{"text": "action description", "suggestedOwner": "name or empty string"}]. Generate 3-5 items. Do not wrap in markdown code blocks.` + projectCtx
+Return ONLY valid JSON array of objects: [{"text": "action description", "suggestedOwner": "name or empty string"}]. Generate 3-5 items. Do not wrap in markdown code blocks.` + projectCtx;
+
+    const result = await callOpenRouterAPI([
+      {
+        role: 'system',
+        content: actionsSystemContent
       },
       {
         role: 'user',

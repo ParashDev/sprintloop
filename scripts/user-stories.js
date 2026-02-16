@@ -963,10 +963,14 @@ Return ONLY a valid JSON array (no markdown, no code blocks):
     let userMessage;
     if (isTargeted) {
       userMessage = epicCtx + '\n\nCreate the following story(ies):\n' + prompt;
+    } else if (selectedEpic && prompt) {
+      // Additional instructions go into system prompt as top-priority override
+      systemPrompt = '\n\nIMPORTANT -- The user has provided specific instructions. ' +
+        'You MUST follow these instructions exactly, even if they contradict the default rules. ' +
+        'These take top priority:\n' + prompt + '\n\n' + systemPrompt;
+      userMessage = epicCtx;
     } else {
-      userMessage = selectedEpic
-        ? epicCtx + (prompt ? '\n\nAdditional Instructions:\n' + prompt : '')
-        : prompt;
+      userMessage = selectedEpic ? epicCtx : prompt;
     }
 
     const result = await callOpenRouterAPI([

@@ -320,11 +320,9 @@ function renderGrid() {
   const table = document.getElementById('raci-table');
   const cardsContainer = document.getElementById('raci-cards');
 
-  // ── Desktop table ──
-  let html = '';
-
-  html += '<thead><tr>';
-  html += '<th class="sticky left-0 z-10 bg-slate-50 dark:bg-slate-900 p-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 min-w-[180px]">Task / Person</th>';
+  // ── Desktop table: single table, first column sticky ──
+  let html = '<thead><tr>';
+  html += '<th class="raci-task-col bg-slate-50 dark:bg-slate-900 p-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700">Task / Person</th>';
   state.stakeholders.forEach(sh => {
     const roleLabel = sh.role || '';
     html += `<th data-stakeholder-id="${sh.id}" class="bg-slate-50 dark:bg-slate-900 px-2 py-3 text-center border-b border-slate-200 dark:border-slate-700 min-w-[120px]">
@@ -339,15 +337,12 @@ function renderGrid() {
       </div>
     </th>`;
   });
-  html += '</tr></thead>';
+  html += '</tr></thead><tbody>';
 
-  html += '<tbody>';
   state.tasks.forEach((task, rowIdx) => {
-    const rowBg = rowIdx % 2 === 0
-      ? 'bg-white dark:bg-slate-950'
-      : 'bg-slate-50/50 dark:bg-slate-900/50';
+    const rowBg = rowIdx % 2 === 0 ? 'bg-white dark:bg-slate-950' : 'bg-slate-50 dark:bg-slate-900';
     html += `<tr class="${rowBg}">`;
-    html += `<td data-task-id="${task.id}" class="sticky left-0 z-10 ${rowBg} p-2 border-r border-b border-slate-200 dark:border-slate-700">
+    html += `<td data-task-id="${task.id}" class="raci-task-col ${rowBg} p-2 border-r border-b border-slate-200 dark:border-slate-700">
       <div class="flex items-center gap-1.5">
         <span class="task-name flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 cursor-pointer hover:text-slate-500 dark:hover:text-slate-300 transition-colors truncate" data-entity-id="${task.id}" data-entity-type="task" onclick="startInlineEdit(this)">${escapeHtml(task.name)}</span>
         <button onclick="removeTask('${task.id}')" class="p-0.5 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0" title="Remove task" aria-label="Remove ${escapeHtml(task.name)}">
@@ -366,7 +361,6 @@ function renderGrid() {
     html += '</tr>';
   });
   html += '</tbody>';
-
   table.innerHTML = html;
 
   // ── Mobile cards ──
@@ -541,7 +535,8 @@ function initAiRaciButton() {
   spacer.before(btn);
 }
 
-async function handleAiRaciSuggest() {
+// Show the choice modal BEFORE calling AI -- user picks mode first
+function handleAiRaciSuggest() {
   if (!ensureApiKey()) return;
 
   if (state.tasks.length === 0 || state.stakeholders.length === 0) {
@@ -549,108 +544,196 @@ async function handleAiRaciSuggest() {
     return;
   }
 
-  const btn = document.getElementById('btn-ai-raci');
-  setAiButtonLoading(btn, true);
+  // Count tasks that have at least one empty cell
+  const tasksWithGaps = state.tasks.filter(t => {
+    return state.stakeholders.some(s => !state.assignments[t.id + '-' + s.id]);
+  });
+  const fullyAssigned = state.tasks.length - tasksWithGaps.length;
+  const existingCount = Object.keys(state.assignments).length;
+
+  const summary = document.getElementById('ai-mode-summary');
+  if (summary) {
+    summary.textContent = state.tasks.length + ' task' + (state.tasks.length !== 1 ? 's' : '') +
+      ', ' + state.stakeholders.length + ' people, ' +
+      existingCount + ' existing assignment' + (existingCount !== 1 ? 's' : '') + '. ' +
+      tasksWithGaps.length + ' task' + (tasksWithGaps.length !== 1 ? 's' : '') +
+      ' have empty cells' + (fullyAssigned > 0 ? ' (' + fullyAssigned + ' fully assigned)' : '') + '.';
+  }
+
+  // Disable "fill empty" if nothing to fill
+  const fillBtn = document.getElementById('ai-mode-fill-btn');
+  if (fillBtn) {
+    if (tasksWithGaps.length === 0) {
+      fillBtn.disabled = true;
+      fillBtn.classList.add('opacity-40', 'cursor-not-allowed');
+    } else {
+      fillBtn.disabled = false;
+      fillBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+    }
+  }
+
+  openModal('ai-mode-modal');
+}
+
+function showAiModeLoading(msg) {
+  document.getElementById('ai-mode-choice').classList.add('hidden');
+  document.getElementById('ai-mode-loading').classList.remove('hidden');
+  document.getElementById('ai-mode-loading-text').textContent = msg || 'Sending tasks to AI...';
+}
+
+function resetAiModeModal() {
+  document.getElementById('ai-mode-choice').classList.remove('hidden');
+  document.getElementById('ai-mode-loading').classList.add('hidden');
+  closeModal('ai-mode-modal');
+}
+
+// Called when user picks a mode from the modal
+async function runAiRaciWithMode(mode) {
+  const taskCount = mode === 'empty'
+    ? state.tasks.filter(t => state.stakeholders.some(s => !state.assignments[t.id + '-' + s.id])).length
+    : state.tasks.length;
+  showAiModeLoading('Analyzing ' + taskCount + ' task' + (taskCount !== 1 ? 's' : '') + ' with ' + state.stakeholders.length + ' people...');
 
   try {
     const projectCtx = getProjectContextForAI();
-    const taskNames = state.tasks.map(t => t.name);
     const peopleDescriptions = state.stakeholders.map(s => {
       const role = s.role ? ' (' + s.role + ')' : '';
       return s.name + role;
     });
 
-    const result = await callOpenRouterAPI([
-      {
-        role: 'system',
-        content: `You are a project management assistant. Read each task carefully and assign RACI roles based on what the task actually involves and each team member's role.
+    // For "fill empty" mode, only send tasks that have empty cells
+    let tasksToSend;
+    let taskIndexMap; // maps sent T# back to original state index
+    if (mode === 'empty') {
+      tasksToSend = [];
+      taskIndexMap = [];
+      state.tasks.forEach((t, origIdx) => {
+        const hasEmpty = state.stakeholders.some(s => !state.assignments[t.id + '-' + s.id]);
+        if (hasEmpty) {
+          tasksToSend.push(t);
+          taskIndexMap.push(origIdx);
+        }
+      });
+    } else {
+      tasksToSend = state.tasks;
+      taskIndexMap = state.tasks.map((_, i) => i);
+    }
 
-Role-to-RACI mapping:
-- Developer: R on coding, implementation, feature-building tasks. C on testing tasks (they explain how it works). I on process/planning tasks.
-- QA Engineer: R on testing, validation, quality assurance tasks. C on coding tasks (they verify testability). I on design/planning tasks.
-- Designer: R on UI/UX, design, visual, and frontend layout tasks. C on frontend coding tasks. I on backend/infra tasks.
-- DevOps: R on deployment, infrastructure, CI/CD, monitoring tasks. C on architecture decisions. I on feature tasks.
-- Tech Lead: A on technical tasks (owns the outcome). C on most tasks (provides technical guidance). R on architecture/technical design tasks.
-- Project Manager: A on process, delivery, and cross-team tasks. I on most technical tasks.
-- Product Owner: A on feature and business-value tasks (owns the "what"). I on technical implementation details.
-- Business Analyst: R on requirements, analysis, documentation tasks. C on feature tasks (clarifies requirements). I on purely technical tasks.
-- Stakeholder: I on most tasks (notified of outcomes). Occasionally C when business input is needed.
+    if (tasksToSend.length === 0) {
+      showToast('All cells are already assigned', 'info');
+      return;
+    }
 
-RACI rules:
-- R (Responsible): The person who DOES the work. Must match the task type to the person's role.
-- A (Accountable): ONE per task. The person who OWNS the outcome and signs off. Usually PO, PM, or Tech Lead.
-- C (Consulted): People whose input is needed BEFORE or DURING the work. Cross-functional roles that provide relevant expertise.
-- I (Informed): People notified AFTER completion. Not directly involved but need to know.
+    // Build existing assignments context for "fill empty" mode so AI knows what's already set
+    let existingCtx = '';
+    if (mode === 'empty') {
+      const existing = [];
+      tasksToSend.forEach((task, tIdx) => {
+        state.stakeholders.forEach((s, sIdx) => {
+          const val = state.assignments[task.id + '-' + s.id];
+          if (val) existing.push('T' + (tIdx + 1) + '-S' + (sIdx + 1) + ': ' + val);
+        });
+      });
+      if (existing.length > 0) {
+        existingCtx = '\n\nExisting assignments (DO NOT change these, only fill empty cells):\n' + existing.join(', ');
+      }
+    }
 
-CRITICAL rules:
-- Analyze each task's content to determine what kind of work it is (coding, testing, design, deployment, etc.) then assign roles accordingly.
-- Each task should have only ONE person as R. Do NOT assign R to multiple people on the same task. One person does the work, not two.
-- When multiple people share the same role (e.g. 2 Developers), SPLIT tasks between them. Dev1 gets R on task 1, Dev2 gets R on task 2, Dev1 gets R on task 3, etc. Distribute evenly so workload is balanced. The other developer on that task can be C (consulted for code review) or left empty.
-- If a person's role has NO relevance to ANY of the tasks, leave them completely empty. Do NOT force-assign roles just to fill cells. A Stakeholder with no business-relevant tasks can be empty. A Designer on a backend-only project can be empty.
-- Only assign C or I when it genuinely makes sense for that role on that specific task.
-- IMPORTANT: If sprint assignment data is provided below, the assigned person MUST be R for that task. Do not override sprint assignments. Build the rest of the RACI around those fixed R assignments.
+    const systemContent = `You are a project management assistant. Assign RACI roles to a responsibility matrix.
 
-Return ONLY valid JSON: {"assignments": {"T1-S1": "R", "T1-S2": "A"}}. Use T + task number and S + person number. Only include cells that have a value. Do not wrap in markdown code blocks.` + projectCtx
-      },
-      {
-        role: 'user',
-        content: (() => {
-          let msg = 'Tasks:\n' + taskNames.map((t, i) => 'T' + (i + 1) + ': ' + t).join('\n') +
-            '\n\nTeam Members:\n' + peopleDescriptions.map((s, i) => 'S' + (i + 1) + ': ' + s).join('\n');
+MANDATORY -- every single task MUST have EXACTLY:
+- ONE R (Responsible): The person who DOES the work. Match task type to person's role.
+- ONE A (Accountable): The person who OWNS the outcome and signs off. Never skip this.
+If a task is missing R or A in your output, your response is INVALID. Double-check before returning.
 
-          // Include sprint board assignments so AI respects them
-          const { items: boardItems } = getActiveSprintItems();
-          if (boardItems.length > 0) {
-            const assignments = [];
-            state.tasks.forEach((task, tIdx) => {
-              const boardItem = boardItems.find(b => {
-                const name = 'As a ' + b.role + ', I want ' + b.action;
-                return name.toLowerCase() === task.name.toLowerCase();
-              });
-              if (boardItem && boardItem.assignee) {
-                const sIdx = state.stakeholders.findIndex(s => s.name.toLowerCase() === boardItem.assignee.toLowerCase());
-                if (sIdx !== -1) {
-                  assignments.push('T' + (tIdx + 1) + ' is assigned to S' + (sIdx + 1) + ' (' + boardItem.assignee + ') on the Sprint Board -- must be R');
-                }
-              }
-            });
-            if (assignments.length > 0) {
-              msg += '\n\nSprint Board Assignments (these people are already assigned and MUST be R):\n' + assignments.join('\n');
+C and I are optional per task:
+- C (Consulted): People whose input is needed BEFORE or DURING work. Only when genuinely relevant.
+- I (Informed): People notified AFTER completion. Only when they need to know.
+
+Role-to-RACI guidance:
+- Developer: R on coding/implementation tasks.
+- QA Engineer: R on testing/validation tasks.
+- Designer: R on UI/UX/visual tasks.
+- DevOps: R on deployment/infra/CI-CD tasks.
+- Tech Lead: A on technical tasks. R on architecture tasks. C on most technical work.
+- Project Manager: A on process/delivery tasks. I on technical tasks.
+- Product Owner: A on feature/business-value tasks. I on implementation details.
+- Business Analyst: R on requirements/documentation. C on feature tasks.
+- Stakeholder: I on most tasks. Occasionally C for business input.
+
+Assignment rules:
+- ONE R per task. Never assign R to multiple people on the same task.
+- ONE A per task. Never skip A. If no obvious owner, default A to Tech Lead, PM, or PO.
+- When multiple people share a role (e.g. 2 Developers), split R between them evenly across tasks. The non-R dev can be C (code review) or empty.
+- If a person's role has zero relevance to a task, leave their cell empty. Do not force C or I.` +
+      (mode === 'empty' ? '\n- IMPORTANT: Some cells already have assignments. Only provide values for EMPTY cells. Do not include already-assigned cells in your output. If a task already has R assigned, do NOT output another R for that task -- just fill in A, C, I as needed.' : '') +
+      `\n- IMPORTANT: If sprint assignment data is provided below, the assigned person MUST be R for that task. Do not override sprint assignments. Build the rest of the RACI around those fixed R assignments.
+
+Return ONLY valid JSON: {"assignments": {"T1-S1": "R", "T1-S2": "A"}}. Use T + task number and S + person number. Only include cells that have a value. Do not wrap in markdown code blocks.` + projectCtx;
+
+    const userContent = (() => {
+      const taskList = tasksToSend.map((t, i) => 'T' + (i + 1) + ': ' + t.name);
+      let msg = 'Tasks:\n' + taskList.join('\n') +
+        '\n\nTeam Members:\n' + peopleDescriptions.map((s, i) => 'S' + (i + 1) + ': ' + s).join('\n');
+
+      // Include sprint board assignments so AI respects them
+      const { items: boardItems } = getActiveSprintItems();
+      if (boardItems.length > 0) {
+        const sprintAssignments = [];
+        tasksToSend.forEach((task, tIdx) => {
+          const boardItem = boardItems.find(b => {
+            const name = 'As a ' + b.role + ', I want ' + b.action;
+            return name.toLowerCase() === task.name.toLowerCase();
+          });
+          if (boardItem && boardItem.assignee) {
+            const sIdx = state.stakeholders.findIndex(s => s.name.toLowerCase() === boardItem.assignee.toLowerCase());
+            if (sIdx !== -1) {
+              sprintAssignments.push('T' + (tIdx + 1) + ' is assigned to S' + (sIdx + 1) + ' (' + boardItem.assignee + ') on the Sprint Board -- must be R');
             }
           }
-
-          return msg;
-        })()
+        });
+        if (sprintAssignments.length > 0) {
+          msg += '\n\nSprint Board Assignments (these people are already assigned and MUST be R):\n' + sprintAssignments.join('\n');
+        }
       }
+
+      msg += existingCtx;
+      return msg;
+    })();
+
+    const result = await callOpenRouterAPI([
+      { role: 'system', content: systemContent },
+      { role: 'user', content: userContent }
     ]);
 
     const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const parsed = JSON.parse(cleaned);
-    applyAiRaciSuggestions(parsed.assignments || {});
+    applyAiRaciSuggestions(parsed.assignments || {}, mode, tasksToSend, taskIndexMap);
   } catch (err) {
     showToast('AI error: ' + err.message, 'error');
   } finally {
-    setAiButtonLoading(btn, false);
+    resetAiModeModal();
   }
 }
 
-function applyAiRaciSuggestions(suggestions) {
+function applyAiRaciSuggestions(suggestions, mode, tasksToSend, taskIndexMap) {
   const newAssignments = {};
 
   // Map T#-S# keys to actual task/stakeholder IDs
+  // T numbers are relative to tasksToSend, not the full state.tasks array
   for (const [key, val] of Object.entries(suggestions)) {
     if (!val || !['R', 'A', 'C', 'I'].includes(val.toUpperCase())) continue;
 
     const match = key.match(/T(\d+)\s*-\s*S(\d+)/i);
     if (!match) continue;
 
-    const taskIdx = parseInt(match[1], 10) - 1;
+    const sentIdx = parseInt(match[1], 10) - 1;
     const shIdx = parseInt(match[2], 10) - 1;
 
-    if (taskIdx < 0 || taskIdx >= state.tasks.length) continue;
+    if (sentIdx < 0 || sentIdx >= tasksToSend.length) continue;
     if (shIdx < 0 || shIdx >= state.stakeholders.length) continue;
 
-    const taskId = state.tasks[taskIdx].id;
+    const taskId = tasksToSend[sentIdx].id;
     const shId = state.stakeholders[shIdx].id;
     newAssignments[taskId + '-' + shId] = val.toUpperCase();
   }
@@ -660,15 +743,74 @@ function applyAiRaciSuggestions(suggestions) {
     return;
   }
 
-  const count = Object.keys(newAssignments).length;
-  if (!confirmAction('Apply ' + count + ' AI-suggested assignments? This will overwrite existing assignments.')) {
-    return;
-  }
+  if (mode === 'empty') {
+    // Build a set of which tasks already have R and A so we don't duplicate them
+    const taskHasR = new Set();
+    const taskHasA = new Set();
+    state.tasks.forEach(task => {
+      state.stakeholders.forEach(s => {
+        const val = state.assignments[task.id + '-' + s.id];
+        if (val === 'R') taskHasR.add(task.id);
+        if (val === 'A') taskHasA.add(task.id);
+      });
+    });
 
-  state.assignments = newAssignments;
-  persist();
-  render();
-  showToast(count + ' assignments applied');
+    // Only fill cells that don't already have a value, and respect single R/A per task
+    let filled = 0;
+    for (const [key, val] of Object.entries(newAssignments)) {
+      if (state.assignments[key]) continue; // cell already has a value, never overwrite
+      const taskId = key.split('-')[0];
+      if (val === 'R' && taskHasR.has(taskId)) continue; // task already has R
+      if (val === 'A' && taskHasA.has(taskId)) continue; // task already has A
+      state.assignments[key] = val;
+      filled++;
+      if (val === 'R') taskHasR.add(taskId);
+      if (val === 'A') taskHasA.add(taskId);
+    }
+    persist();
+    render();
+
+    // Validate: check all tasks (not just sent ones) for missing R or A
+    const warnings = validateRaciCompleteness();
+    if (warnings.length > 0) {
+      showToast(filled + ' cells filled. Warning: ' + warnings.length + ' task(s) still missing R or A', 'error');
+    } else {
+      showToast(filled + ' empty cell' + (filled !== 1 ? 's' : '') + ' filled (existing kept)');
+    }
+  } else {
+    // Replace all
+    state.assignments = newAssignments;
+    persist();
+    render();
+
+    const warnings = validateRaciCompleteness();
+    if (warnings.length > 0) {
+      showToast(Object.keys(newAssignments).length + ' applied. Warning: ' + warnings.length + ' task(s) missing R or A', 'error');
+    } else {
+      showToast(Object.keys(newAssignments).length + ' assignments applied (replaced all)');
+    }
+  }
+}
+
+// Validate every task has at least R and A assigned
+function validateRaciCompleteness() {
+  const warnings = [];
+  state.tasks.forEach(task => {
+    let hasR = false;
+    let hasA = false;
+    state.stakeholders.forEach(s => {
+      const val = state.assignments[task.id + '-' + s.id];
+      if (val === 'R') hasR = true;
+      if (val === 'A') hasA = true;
+    });
+    if (!hasR || !hasA) {
+      const missing = [];
+      if (!hasR) missing.push('R');
+      if (!hasA) missing.push('A');
+      warnings.push({ task: task.name, missing });
+    }
+  });
+  return warnings;
 }
 
 // ─── Import from Sprint Board ───

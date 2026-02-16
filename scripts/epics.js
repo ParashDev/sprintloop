@@ -1081,10 +1081,14 @@ Return ONLY a valid JSON array (no markdown, no code blocks):
     let userMessage;
     if (isTargeted) {
       userMessage = (hasDocs ? docsCtx + '\n\n' : '') + 'Create the following epic(s):\n' + prompt;
+    } else if (hasDocs && prompt) {
+      // Additional instructions go into system prompt as top-priority override
+      systemPrompt = '\n\nIMPORTANT -- The user has provided specific instructions. ' +
+        'You MUST follow these instructions exactly, even if they contradict the default rules. ' +
+        'These take top priority:\n' + prompt + '\n\n' + systemPrompt;
+      userMessage = docsCtx;
     } else {
-      userMessage = hasDocs
-        ? docsCtx + (prompt ? '\n\nAdditional Instructions:\n' + prompt : '')
-        : prompt;
+      userMessage = hasDocs ? docsCtx : prompt;
     }
 
     const result = await callOpenRouterAPI([

@@ -64,6 +64,32 @@
       border-radius: 999px;
       transition: width 0.3s ease;
     }
+    .raci-split-table {
+      table-layout: fixed;
+      width: max-content;
+      min-width: 100%;
+    }
+    .raci-split-table .raci-task-col {
+      width: 50vw;
+      max-width: calc(50% - 1px);
+      position: sticky;
+      left: 0;
+      z-index: 20;
+    }
+    @media (min-width: 1024px) {
+      .raci-split-table .raci-task-col {
+        width: 45%;
+        max-width: 500px;
+      }
+    }
+    .raci-right-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: #94a3b8 transparent;
+    }
+    .raci-right-scroll::-webkit-scrollbar { height: 6px; }
+    .raci-right-scroll::-webkit-scrollbar-track { background: transparent; }
+    .raci-right-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+    .dark .raci-right-scroll::-webkit-scrollbar-thumb { background: #475569; }
   </style>
 </head>
 <body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
@@ -231,8 +257,8 @@
     <div id="raci-grid-section" class="mb-8 hidden">
       <!-- Desktop table (hidden below lg) -->
       <div id="raci-grid-wrapper" class="hidden lg:block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table id="raci-table" class="w-full border-collapse min-w-[480px]">
+        <div class="overflow-x-auto raci-right-scroll">
+          <table id="raci-table" class="border-collapse raci-split-table">
             <!-- Dynamically rendered by JS -->
           </table>
         </div>
@@ -325,6 +351,56 @@
           <button type="submit" class="px-4 py-2 text-sm font-medium rounded-lg bg-slate-800 dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 text-white transition-colors">Save</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- AI Suggest Mode Modal -->
+  <div id="ai-mode-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-md">
+      <!-- Choice view -->
+      <div id="ai-mode-choice">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">AI Suggest Mode</h3>
+          <button onclick="closeModal('ai-mode-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="p-5 space-y-3">
+          <p id="ai-mode-summary" class="text-sm text-slate-600 dark:text-slate-400"></p>
+          <button id="ai-mode-fill-btn" onclick="runAiRaciWithMode('empty')" class="w-full flex items-start gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group">
+            <div class="mt-0.5 w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <div>
+              <span class="text-sm font-medium text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Fill empty cells only</span>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Keep all existing assignments. Only tasks with empty cells are sent to AI -- saves tokens.</p>
+            </div>
+          </button>
+          <button id="ai-mode-replace-btn" onclick="runAiRaciWithMode('all')" class="w-full flex items-start gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group">
+            <div class="mt-0.5 w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </div>
+            <div>
+              <span class="text-sm font-medium text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">Replace all assignments</span>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Overwrite every cell with AI suggestions. Existing assignments will be lost.</p>
+            </div>
+          </button>
+          <div class="flex justify-end pt-1">
+            <button onclick="closeModal('ai-mode-modal')" class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <!-- Loading view -->
+      <div id="ai-mode-loading" class="hidden">
+        <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Analyzing Matrix</h3>
+        </div>
+        <div class="p-8 flex flex-col items-center gap-4">
+          <div class="w-10 h-10 border-3 border-slate-200 dark:border-slate-700 border-t-slate-800 dark:border-t-slate-200 rounded-full animate-spin"></div>
+          <p id="ai-mode-loading-text" class="text-sm text-slate-600 dark:text-slate-400 text-center">Sending tasks to AI...</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500">This may take a few seconds</p>
+        </div>
+      </div>
     </div>
   </div>
 

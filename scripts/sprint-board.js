@@ -273,33 +273,374 @@ function handleCreateSprint() {
   showToast('Sprint created: ' + name);
 }
 
-function completeSprint() {
+// ─── Sprint Completion Workflow ───
+
+function getNextSprintName(currentName) {
+  const match = currentName.match(/^(.*?)(\d+)$/);
+  if (match) return match[1] + (parseInt(match[2], 10) + 1);
+  return currentName + ' 2';
+}
+
+function openCompleteSprintModal() {
   const sprint = getCurrentSprint();
   if (!sprint || sprint.status !== 'active') return;
 
   const items = sprint.items;
-  const total = items.length;
   const doneItems = items.filter(i => i.column === 'done');
-  const doneCount = doneItems.length;
-  const notDone = total - doneCount;
-  const totalPts = items.reduce((s, i) => s + (i.storyPoints || 0), 0);
+  const incompleteItems = items.filter(i => i.column !== 'done');
+  const donePts = doneItems.reduce((s, i) => s + (i.storyPoints || 0), 0);
+  const incompletePts = incompleteItems.reduce((s, i) => s + (i.storyPoints || 0), 0);
+
+  // Per-column breakdown of incomplete items
+  const columnCounts = {};
+  const columnLabels = { backlog: 'Backlog', todo: 'To Do', 'in-progress': 'In Progress', review: 'Review' };
+  incompleteItems.forEach(i => {
+    const label = columnLabels[i.column] || i.column;
+    columnCounts[label] = (columnCounts[label] || 0) + 1;
+  });
+  const breakdownHtml = Object.entries(columnCounts)
+    .map(([label, count]) => `<span class="text-xs text-slate-500 dark:text-slate-400">${escHtml(label)}: ${count}</span>`)
+    .join('<span class="text-slate-300 dark:text-slate-700 mx-1">|</span>');
+
+  const nextName = getNextSprintName(sprint.name);
+  const sprintConfig = loadProjectData('sprint-config', { days: 10 });
+  const sprintDays = sprintConfig.days || 14;
+
+  // Build incomplete items list for carryover selection
+  const carryoverListHtml = incompleteItems.length > 0
+    ? incompleteItems.map(item => {
+      const colLabel = columnLabels[item.column] || item.column;
+      return `
+        <label class="flex items-start gap-3 py-1.5 cursor-pointer group">
+          <input type="checkbox" checked value="${item.id}" data-carry-item
+            class="mt-0.5 w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white focus:ring-slate-400">
+          <div class="flex-1 min-w-0">
+            <p class="text-xs text-slate-700 dark:text-slate-300 leading-snug truncate">As a ${escHtml(item.role)}, I want ${escHtml(item.action)}</p>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="text-[11px] text-slate-400 dark:text-slate-500">${colLabel}</span>
+              <span class="text-[11px] text-slate-400 dark:text-slate-500">${item.storyPoints || 0} pts</span>
+            </div>
+          </div>
+        </label>`;
+    }).join('')
+    : '<p class="text-xs text-slate-400 dark:text-slate-500 py-2">No incomplete items to carry over.</p>';
+
+  const hasIncomplete = incompleteItems.length > 0;
+
+  let modal = document.getElementById('complete-sprint-modal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'complete-sprint-modal';
+  modal.className = 'hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4';
+  modal.onclick = (e) => { if (e.target === modal) closeModal('complete-sprint-modal'); };
+  modal.innerHTML = `
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg max-h-[85vh] flex flex-col" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Complete ${escHtml(sprint.name)}</h2>
+        <button onclick="closeModal('complete-sprint-modal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+        <!-- Step 1: Summary -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Sprint Summary</h3>
+          ${sprint.goal ? `<p class="text-sm text-slate-600 dark:text-slate-400 italic">${escHtml(sprint.goal)}</p>` : ''}
+          ${sprint.startDate ? `<p class="text-xs text-slate-400 dark:text-slate-500">${sprint.startDate}${sprint.endDate ? ' to ' + sprint.endDate : ''}</p>` : ''}
+          <div class="grid grid-cols-2 gap-3">
+            <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3 text-center">
+              <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">${doneItems.length}</p>
+              <p class="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-0.5">Done (${donePts} pts)</p>
+            </div>
+            <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-center">
+              <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">${incompleteItems.length}</p>
+              <p class="text-xs text-amber-600/70 dark:text-amber-400/70 mt-0.5">Incomplete (${incompletePts} pts)</p>
+            </div>
+          </div>
+          ${breakdownHtml ? `<div class="flex flex-wrap gap-1">${breakdownHtml}</div>` : ''}
+        </div>
+
+        <!-- Step 2: Action Checkboxes -->
+        <div class="space-y-4">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Actions</h3>
+
+          <!-- Carry over incomplete items -->
+          <div class="space-y-2">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="csc-carry-over" ${hasIncomplete ? 'checked' : 'disabled'}
+                onchange="document.getElementById('csc-carry-list').classList.toggle('hidden', !this.checked)"
+                class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white focus:ring-slate-400">
+              <span class="text-sm font-medium text-slate-800 dark:text-slate-200">Carry over incomplete items</span>
+              <span class="text-xs text-slate-400 dark:text-slate-500">(${incompleteItems.length})</span>
+            </label>
+            <div id="csc-carry-list" class="${hasIncomplete ? '' : 'hidden'} ml-7 pl-3 border-l-2 border-slate-200 dark:border-slate-700 max-h-40 overflow-y-auto space-y-0.5">
+              ${carryoverListHtml}
+            </div>
+          </div>
+
+          <!-- Create retro session -->
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" id="csc-create-retro" checked
+              class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white focus:ring-slate-400">
+            <span class="text-sm font-medium text-slate-800 dark:text-slate-200">Create retro session</span>
+          </label>
+
+          <!-- Create next sprint -->
+          <div class="space-y-2">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="csc-create-next" checked
+                onchange="document.getElementById('csc-next-name-row').classList.toggle('hidden', !this.checked)"
+                class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white focus:ring-slate-400">
+              <span class="text-sm font-medium text-slate-800 dark:text-slate-200">Create next sprint</span>
+            </label>
+            <div id="csc-next-name-row" class="ml-7 flex items-center gap-2">
+              <input type="text" id="csc-next-name" value="${escHtml(nextName)}"
+                class="flex-1 px-3 py-1.5 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            </div>
+          </div>
+
+          <!-- Sync story statuses -->
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" id="csc-sync-stories" checked
+              class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white focus:ring-slate-400">
+            <span class="text-sm font-medium text-slate-800 dark:text-slate-200">Sync story statuses</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
+        <button onclick="closeModal('complete-sprint-modal')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+        <button onclick="executeSprintCompletion()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Complete Sprint
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  openModal('complete-sprint-modal');
+}
+
+function executeSprintCompletion() {
+  const sprint = getCurrentSprint();
+  if (!sprint || sprint.status !== 'active') return;
+
+  const doCarryOver = document.getElementById('csc-carry-over')?.checked || false;
+  const doCreateRetro = document.getElementById('csc-create-retro')?.checked || false;
+  const doCreateNext = document.getElementById('csc-create-next')?.checked || false;
+  const doSyncStories = document.getElementById('csc-sync-stories')?.checked || false;
+
+  const items = sprint.items;
+  const doneItems = items.filter(i => i.column === 'done');
+  const incompleteItems = items.filter(i => i.column !== 'done');
   const donePts = doneItems.reduce((s, i) => s + (i.storyPoints || 0), 0);
 
-  const msg = `Complete "${sprint.name}"?\n\n` +
-    `Stories: ${doneCount} done / ${notDone} remaining\n` +
-    `Points: ${donePts} delivered / ${totalPts} total\n\n` +
-    `Completed sprints become read-only.`;
+  // Determine which incomplete items are selected for carryover
+  let carryIds = new Set();
+  if (doCarryOver) {
+    const checkboxes = document.querySelectorAll('[data-carry-item]:checked');
+    checkboxes.forEach(cb => carryIds.add(cb.value));
+  }
+  const carryItems = incompleteItems.filter(i => carryIds.has(i.id));
 
-  if (!confirm(msg)) return;
-
+  // 1. Mark sprint as completed
   sprint.status = 'completed';
   sprint.completedAt = new Date().toISOString();
+
+  // 2. Create next sprint if checked
+  let newSprint = null;
+  if (doCreateNext) {
+    const nextName = document.getElementById('csc-next-name')?.value.trim() || getNextSprintName(sprint.name);
+    const today = new Date().toISOString().slice(0, 10);
+    const sprintConfig = loadProjectData('sprint-config', { days: 10 });
+    const sprintDays = sprintConfig.days || 14;
+    const endDate = new Date(Date.now() + sprintDays * 86400000).toISOString().slice(0, 10);
+
+    newSprint = {
+      id: uid(),
+      name: nextName,
+      startDate: today,
+      endDate: endDate,
+      status: 'active',
+      goal: '',
+      items: [],
+      plannerBacklog: [],
+      createdAt: new Date().toISOString(),
+      completedAt: null,
+    };
+    sprints.push(newSprint);
+  }
+
+  // 3. Carry over selected incomplete items
+  if (doCarryOver && carryItems.length > 0) {
+    const targetSprint = newSprint || null;
+    if (targetSprint) {
+      carryOverItems(sprint, targetSprint.id, carryItems);
+    }
+  }
+
+  // 3b. Move uncommitted planner backlog items to new sprint
+  if (newSprint) {
+    const uncommitted = (sprint.plannerBacklog || []).filter(i => !i.committed);
+    if (uncommitted.length > 0) {
+      uncommitted.forEach(item => {
+        newSprint.plannerBacklog.push(JSON.parse(JSON.stringify(item)));
+      });
+    }
+  }
+
+  // 4. Create retro session if checked
+  if (doCreateRetro) {
+    createRetroFromSprint(sprint);
+  }
+
+  // 5. Sync story statuses if checked
+  if (doSyncStories) {
+    bulkSyncStoryStatuses(doneItems, incompleteItems);
+  }
+
+  // 6. Save and switch
   saveSprints();
 
+  if (newSprint) {
+    currentSprintId = newSprint.id;
+  }
+
+  closeModal('complete-sprint-modal');
   populateSprintDropdown();
   renderBoard();
   updateSprintUI();
-  showToast(`Sprint completed -- ${donePts} pts delivered`);
+
+  // Summary toast
+  const parts = [donePts + ' pts delivered'];
+  if (doCarryOver && carryItems.length > 0) parts.push(carryItems.length + ' items carried over');
+  if (doCreateNext && newSprint) parts.push(newSprint.name + ' created');
+  if (doCreateRetro) parts.push('retro session created');
+  showToast('Sprint completed -- ' + parts.join(', '));
+}
+
+function carryOverItems(fromSprint, toSprintId, itemsToCarry) {
+  const targetSprint = sprints.find(s => s.id === toSprintId);
+  if (!targetSprint) return;
+
+  const columnLabels = { backlog: 'Backlog', todo: 'To Do', 'in-progress': 'In Progress', review: 'Review', done: 'Done' };
+
+  itemsToCarry.forEach(original => {
+    const clone = JSON.parse(JSON.stringify(original));
+    const newId = uid();
+    clone.id = newId;
+    clone.column = 'backlog';
+    clone.doneAt = null;
+    // Track where this item came from
+    clone.carriedFrom = {
+      sprintId: fromSprint.id,
+      sprintName: fromSprint.name,
+      previousColumn: columnLabels[original.column] || original.column,
+    };
+    targetSprint.items.push(clone);
+
+    // Mirror into plannerBacklog as a committed item so Capacity Planner stays in sync
+    const plannerEntry = {
+      id: uid(),
+      storyId: original.storyId || null,
+      title: original.role
+        ? 'As a ' + (original.role || '') + ', I want ' + (original.action || '')
+        : (original.action || 'Carried item'),
+      storyPoints: original.storyPoints || 0,
+      estimatedHours: (original.storyPoints || 0) * 4,
+      committed: true,
+      carriedFrom: {
+        sprintId: fromSprint.id,
+        sprintName: fromSprint.name,
+        previousColumn: columnLabels[original.column] || original.column,
+      },
+    };
+    // Link the board item back to this planner entry
+    clone.plannerItemId = plannerEntry.id;
+    targetSprint.plannerBacklog.push(plannerEntry);
+  });
+}
+
+function createRetroFromSprint(sprint) {
+  const retroSessions = loadProjectData('retro-sessions', []);
+
+  const items = sprint.items;
+  const doneItems = items.filter(i => i.column === 'done');
+  const incompleteItems = items.filter(i => i.column !== 'done');
+
+  const columnLabels = { backlog: 'Backlog', todo: 'To Do', 'in-progress': 'In Progress', review: 'Review', done: 'Done' };
+
+  const wellCards = doneItems.map(i => ({
+    id: uid(),
+    sourceId: i.id,
+    text: 'Completed: As a ' + (i.role || 'user') + ', I want ' + (i.action || 'this item') + (i.benefit ? ', so that ' + i.benefit : ''),
+    assignee: i.assignee || '',
+    points: i.storyPoints || 0,
+    priority: i.priority || '',
+    sprintStatus: 'Done',
+  }));
+
+  const improveCards = incompleteItems.map(i => {
+    const col = columnLabels[i.column] || i.column;
+    const prefix = (i.column === 'todo' || i.column === 'backlog') ? 'Still in ' + col : 'Stuck in ' + col;
+    return {
+      id: uid(),
+      sourceId: i.id,
+      text: prefix + ': As a ' + (i.role || 'user') + ', I want ' + (i.action || 'this item') + (i.benefit ? ', so that ' + i.benefit : ''),
+      assignee: i.assignee || '',
+      points: i.storyPoints || 0,
+      priority: i.priority || '',
+      sprintStatus: prefix,
+    };
+  });
+
+  const session = {
+    id: uid(),
+    date: new Date().toISOString().slice(0, 10),
+    sprintId: sprint.id,
+    wentWell: wellCards,
+    didntGoWell: improveCards,
+    actionItems: [],
+  };
+
+  retroSessions.push(session);
+  saveProjectData('retro-sessions', retroSessions);
+}
+
+function bulkSyncStoryStatuses(doneItems, allIncompleteItems) {
+  const stories = loadProjectData(STORY_SOURCE_KEY, []);
+  let changed = false;
+
+  // Done items: ensure linked stories are marked Done
+  doneItems.forEach(item => {
+    if (!item.storyId) return;
+    const idx = stories.findIndex(s => s.id === item.storyId);
+    if (idx === -1) return;
+    if (stories[idx].status !== 'Done') {
+      stories[idx].status = 'Done';
+      changed = true;
+    }
+  });
+
+  // All incomplete items go back to Backlog -- carried or not
+  allIncompleteItems.forEach(item => {
+    if (!item.storyId) return;
+    const idx = stories.findIndex(s => s.id === item.storyId);
+    if (idx === -1) return;
+    if (stories[idx].status !== 'Backlog') {
+      stories[idx].status = 'Backlog';
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    saveProjectData(STORY_SOURCE_KEY, stories);
+  }
 }
 
 function deleteCurrentSprint() {
@@ -474,6 +815,7 @@ function renderCard(item, readOnly) {
         <span class="ml-auto text-[11px] font-bold text-slate-700 dark:text-slate-300">${item.storyPoints || 0}<span class="font-normal text-slate-400 ml-0.5">pts</span></span>
       </div>
       ${epic ? `<div class="px-2.5 pb-1"><span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-medium" title="${escHtml(epic.title || '')}"><svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>${escHtml(epic.id)}</span></div>` : ''}
+      ${item.carriedFrom ? `<div class="px-2.5 pb-1"><span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 font-medium" title="Was ${escHtml(item.carriedFrom.previousColumn)} in ${escHtml(item.carriedFrom.sprintName)}"><svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>${escHtml(item.carriedFrom.sprintName)} / ${escHtml(item.carriedFrom.previousColumn)}</span></div>` : ''}
       <!-- Body -->
       <div class="px-2.5 pb-2">
         <p class="text-[10px] text-slate-400 dark:text-slate-500 mb-0.5 truncate">${escHtml(item.role)}</p>
@@ -661,6 +1003,8 @@ function moveCardForward(itemId) {
 
   items[idx].column = COLUMNS[colIdx + 1].id;
   items[idx].updatedAt = new Date().toISOString();
+  if (items[idx].column === 'done') items[idx].doneAt = new Date().toISOString();
+  else delete items[idx].doneAt;
   saveSprints();
   syncStoryStatus(items[idx]);
   renderBoard();
@@ -677,6 +1021,8 @@ function moveCardBack(itemId) {
 
   items[idx].column = COLUMNS[colIdx - 1].id;
   items[idx].updatedAt = new Date().toISOString();
+  if (items[idx].column === 'done') items[idx].doneAt = new Date().toISOString();
+  else delete items[idx].doneAt;
   saveSprints();
   syncStoryStatus(items[idx]);
   renderBoard();
@@ -726,6 +1072,8 @@ function handleDrop(e, targetColumn) {
   if (items[idx].column !== targetColumn) {
     items[idx].column = targetColumn;
     items[idx].updatedAt = new Date().toISOString();
+    if (targetColumn === 'done') items[idx].doneAt = new Date().toISOString();
+    else delete items[idx].doneAt;
     saveSprints();
     syncStoryStatus(items[idx]);
     renderBoard();
@@ -1379,6 +1727,8 @@ function handleDetailColumnChange() {
 
   items[idx].column = newColumn;
   items[idx].updatedAt = new Date().toISOString();
+  if (newColumn === 'done') items[idx].doneAt = new Date().toISOString();
+  else delete items[idx].doneAt;
   saveSprints();
   syncStoryStatus(items[idx]);
   renderBoard();
@@ -1557,20 +1907,29 @@ async function submitAiSolve() {
       (acText ? 'Acceptance Criteria:\n' + acText : 'No acceptance criteria defined.') +
       epicContext;
 
+    let systemContent = projectCtx + '\n\nYou are a senior software engineer helping a product team implement a user story.';
+
     if (extraInstructions) {
-      userContent += '\n\nAdditional instructions from the product owner:\n' + extraInstructions;
+      // Additional instructions override the default format
+      systemContent += '\n\nIMPORTANT -- The product owner has provided specific instructions. ' +
+        'You MUST follow these instructions exactly, even if they contradict the default output format below. ' +
+        'These take top priority:\n' + extraInstructions + '\n\n' +
+        'Unless the above instructions say otherwise, structure your response with these sections:';
+    } else {
+      systemContent += ' Given a user story with acceptance criteria, provide:';
     }
+
+    systemContent += '\n\n' +
+      '## Technical Breakdown\nKey components, services, and data models needed.\n\n' +
+      '## Implementation Steps\nOrdered list of development tasks with clear deliverables.\n\n' +
+      '## Code Suggestions\nPseudocode or code snippets for critical parts.\n\n' +
+      '## Potential Challenges\nRisks, edge cases, and things to watch for.\n\n' +
+      'Use markdown formatting with ## headers. Be specific and actionable, not theoretical.';
 
     const result = await callOpenRouterAPI([
       {
         role: 'system',
-        content: projectCtx + '\n\nYou are a senior software engineer helping a product team implement a user story. ' +
-          'Given a user story with acceptance criteria, provide:\n\n' +
-          '## Technical Breakdown\nKey components, services, and data models needed.\n\n' +
-          '## Implementation Steps\nOrdered list of development tasks with clear deliverables.\n\n' +
-          '## Code Suggestions\nPseudocode or code snippets for critical parts.\n\n' +
-          '## Potential Challenges\nRisks, edge cases, and things to watch for.\n\n' +
-          'Use markdown formatting with ## headers. Be specific and actionable, not theoretical.'
+        content: systemContent
       },
       {
         role: 'user',

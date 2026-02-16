@@ -40,8 +40,8 @@ const NAV_ITEMS = [
   { label: 'Stories', href: 'user-stories.html', icon: 'doc' },
   { label: 'Capacity', href: 'capacity-planner.html', icon: 'capacity' },
   { label: 'Sprint', href: 'sprint-board.html', icon: 'sprint' },
-  { label: 'RACI', href: 'raci-matrix.html', icon: 'grid' },
   { label: 'Retro', href: 'retro-log.html', icon: 'chat' },
+  { label: 'RACI', href: 'raci-matrix.html', icon: 'grid' },
 ];
 
 const NAV_ICONS = {

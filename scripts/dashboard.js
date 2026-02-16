@@ -3,6 +3,7 @@
 let velocityChart = null;
 let priorityChart = null;
 let teamChart = null;
+let burndownChart = null;
 
 // ─── Sprint Data Normalization ───
 function normalizeSprints(raw) {
@@ -52,7 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (themeBtn) {
     themeBtn.addEventListener('click', () => {
       setTimeout(() => {
+        const sprints = normalizeSprints(loadProjectData('sprint-board', []));
         renderCharts();
+        renderBurndownChart(sprints);
+        renderVelocityChart(sprints);
         renderTeamChart(loadProjectData('sprint-team', []));
       }, 100);
     });
@@ -73,7 +77,9 @@ function renderDashboard() {
 
   renderKPIs(stories, sprints, risks, sessions);
   renderCharts(stories, sprints);
-  renderBoardSummary(sprints);
+  renderBurndownChart(sprints);
+  renderRoadmap(sprints, epics);
+  renderVelocityChart(sprints);
   renderTeamChart(team);
   renderEpicProgress(epics, stories);
   renderRiskSummary(risks);
@@ -94,15 +100,21 @@ function renderKPIs(stories, sprints, risks, sessions) {
 
   // Sprint progress
   const activeSprint = sprints.find(s => s.status === 'active');
+  const velocityData = getCompletedSprintVelocity(sprints);
+  const avgVelocity = velocityData.length > 0
+    ? Math.round(velocityData.reduce((s, d) => s + d.delivered, 0) / velocityData.length)
+    : 0;
+  const velocitySuffix = avgVelocity > 0 ? ' | avg velocity: ' + avgVelocity + ' pts' : '';
+
   if (activeSprint && activeSprint.items && activeSprint.items.length) {
     const sprintTotal = activeSprint.items.length;
     const sprintDone = activeSprint.items.filter(i => i.column === 'done').length;
     const pct = Math.round((sprintDone / sprintTotal) * 100);
     document.getElementById('kpi-sprint-pct').textContent = pct + '%';
-    document.getElementById('kpi-sprint-label').textContent = activeSprint.name + ' -- ' + sprintDone + '/' + sprintTotal + ' items';
+    document.getElementById('kpi-sprint-label').textContent = activeSprint.name + ' -- ' + sprintDone + '/' + sprintTotal + ' items' + velocitySuffix;
   } else if (activeSprint) {
     document.getElementById('kpi-sprint-pct').textContent = '0%';
-    document.getElementById('kpi-sprint-label').textContent = activeSprint.name + ' -- empty';
+    document.getElementById('kpi-sprint-label').textContent = activeSprint.name + ' -- empty' + velocitySuffix;
   } else {
     document.getElementById('kpi-sprint-pct').textContent = '--';
     document.getElementById('kpi-sprint-label').textContent = 'No active sprint';
@@ -295,46 +307,342 @@ function renderPriorityChart(stories) {
   });
 }
 
-// ─── Sprint Board Summary ───
-function renderBoardSummary(sprints) {
-  const emptyEl = document.getElementById('board-summary-empty');
-  const barsEl = document.getElementById('board-summary-bars');
+// ─── Sprint Burndown ───
+function renderBurndownChart(sprints) {
+  const canvas = document.getElementById('burndown-chart');
+  const emptyEl = document.getElementById('burndown-empty');
 
   const activeSprint = sprints.find(s => s.status === 'active');
   const items = activeSprint?.items || [];
+  const startDate = activeSprint?.startDate;
+  // If no end date, estimate from sprint config or default to 14 days
+  let endDate = activeSprint?.endDate;
+  if (!endDate && startDate) {
+    const config = loadProjectData('sprint-config', {});
+    const sprintDays = config.days || 14;
+    const estimated = new Date(startDate);
+    estimated.setDate(estimated.getDate() + sprintDays);
+    endDate = estimated.toISOString().slice(0, 10);
+  }
 
-  if (!items.length) {
+  if (!activeSprint || !items.length || !startDate) {
+    canvas.style.display = 'none';
     emptyEl.classList.remove('hidden');
-    barsEl.innerHTML = '';
+    if (burndownChart) { burndownChart.destroy(); burndownChart = null; }
+    return;
+  }
+
+  canvas.style.display = 'block';
+  emptyEl.classList.add('hidden');
+  if (burndownChart) burndownChart.destroy();
+
+  // Build day-by-day labels from start to end
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const totalPoints = items.reduce((s, i) => s + (i.storyPoints || 0), 0);
+  const totalDays = Math.max(1, Math.round((end - start) / 86400000));
+
+  const labels = [];
+  const idealData = [];
+  const actualData = [];
+
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dayStr = d.toISOString().slice(0, 10);
+    const dayNum = Math.round((d - start) / 86400000);
+    labels.push(dayStr.slice(5)); // MM-DD
+    idealData.push(Math.max(0, totalPoints - (totalPoints / totalDays) * dayNum));
+
+    if (d <= today) {
+      // Count points done by this day
+      const doneByDay = items
+        .filter(i => i.column === 'done' && i.doneAt && i.doneAt.slice(0, 10) <= dayStr)
+        .reduce((s, i) => s + (i.storyPoints || 0), 0);
+      actualData.push(totalPoints - doneByDay);
+    } else {
+      actualData.push(null);
+    }
+  }
+
+  const c = chartColors();
+  const dark = isDark();
+  burndownChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Ideal',
+          data: idealData.map(v => Math.round(v * 10) / 10),
+          borderColor: dark ? '#475569' : '#cbd5e1',
+          borderWidth: 2,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          tension: 0,
+          fill: false,
+        },
+        {
+          label: 'Actual',
+          data: actualData,
+          borderColor: '#3b82f6',
+          borderWidth: 2,
+          backgroundColor: dark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.06)',
+          pointBackgroundColor: '#3b82f6',
+          pointBorderColor: dark ? '#1e293b' : '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          tension: 0.2,
+          fill: true,
+          spanGaps: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: c.legend,
+            font: { size: 11 },
+            usePointStyle: true,
+            boxWidth: 8,
+            boxHeight: 8,
+            padding: 16,
+          }
+        },
+        tooltip: {
+          backgroundColor: c.tooltipBg,
+          titleColor: c.tooltipText,
+          bodyColor: c.tooltipText,
+          borderColor: c.tooltipBorder,
+          borderWidth: 1,
+          cornerRadius: 8,
+          padding: 10,
+          callbacks: {
+            label: ctx => ' ' + ctx.dataset.label + ': ' + (ctx.raw !== null ? ctx.raw + ' pts' : '--')
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: c.tick, font: { size: 10 }, maxRotation: 45 },
+          border: { display: false },
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: c.grid },
+          ticks: { color: c.tick, font: { size: 11 }, stepSize: 1 },
+          border: { display: false },
+        }
+      }
+    }
+  });
+}
+
+// ─── Sprint Roadmap ───
+function renderRoadmap(sprints, epics) {
+  const emptyEl = document.getElementById('roadmap-empty');
+  const contentEl = document.getElementById('roadmap-content');
+
+  // Only show sprints that have dates
+  const dated = sprints.filter(s => s.startDate);
+  if (!dated.length) {
+    emptyEl.classList.remove('hidden');
+    contentEl.classList.add('hidden');
     return;
   }
   emptyEl.classList.add('hidden');
+  contentEl.classList.remove('hidden');
 
-  const columns = [
-    { id: 'backlog', label: 'Backlog', color: 'bg-slate-400' },
-    { id: 'todo', label: 'To Do', color: 'bg-blue-400' },
-    { id: 'in-progress', label: 'In Progress', color: 'bg-amber-400' },
-    { id: 'review', label: 'Review', color: 'bg-purple-400' },
-    { id: 'done', label: 'Done', color: 'bg-emerald-400' },
-  ];
+  // Build epic map from traceability data
+  const epicMap = new Map();
+  epics.forEach(e => epicMap.set(e.id, e));
 
-  const total = items.length;
-  let html = '';
+  // For each sprint, find which epics have stories on the board
+  const sprintEpics = dated.map(sprint => {
+    const items = sprint.items || [];
+    const epicIds = new Set();
+    items.forEach(item => {
+      if (item.storyId) {
+        epics.forEach(epic => {
+          if ((epic.linkedStories || []).includes(item.storyId)) {
+            epicIds.add(epic.id);
+          }
+        });
+      }
+    });
+    return { sprint, epicIds: [...epicIds] };
+  });
 
-  columns.forEach(col => {
-    const count = items.filter(i => i.column === col.id).length;
-    const pct = Math.round((count / total) * 100);
+  const statusColors = {
+    active: 'border-blue-500 bg-blue-50 dark:bg-blue-900/20',
+    completed: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20',
+    planned: 'border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50',
+  };
+
+  const statusBadge = {
+    active: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+    completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+    planned: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  };
+
+  let html = '<div class="space-y-3">';
+
+  sprintEpics.forEach(({ sprint, epicIds }) => {
+    const status = sprint.status || 'planned';
+    const cardClass = statusColors[status] || statusColors.planned;
+    const badgeClass = statusBadge[status] || statusBadge.planned;
+    const dates = sprint.startDate + (sprint.endDate ? ' -- ' + sprint.endDate : '');
+    const itemCount = (sprint.items || []).length;
+    const doneCount = (sprint.items || []).filter(i => i.column === 'done').length;
+
     html += `
-      <div class="flex items-center gap-3">
-        <span class="text-xs text-slate-500 dark:text-slate-400 w-24 text-right shrink-0">${col.label}</span>
-        <div class="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-5 overflow-hidden">
-          <div class="${col.color} h-full rounded-full transition-all duration-500" style="width:${pct}%"></div>
+      <div class="border-l-4 ${cardClass} rounded-r-lg p-3">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">${escapeHtmlShared(sprint.name)}</span>
+            <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${badgeClass}">${status}</span>
+          </div>
+          <span class="text-[11px] text-slate-400">${doneCount}/${itemCount} items</span>
         </div>
-        <span class="text-xs font-medium text-slate-600 dark:text-slate-300 w-10 text-right">${count}</span>
+        <p class="text-[11px] text-slate-400 mb-2">${dates}</p>
+        ${epicIds.length ? `<div class="flex flex-wrap gap-1">${epicIds.map(id => {
+          const epic = epicMap.get(id);
+          const title = epic ? epic.title : id;
+          return `<span class="inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300" title="${escapeHtmlShared(title)}">${escapeHtmlShared(id)}</span>`;
+        }).join('')}</div>` : '<p class="text-[10px] text-slate-400 italic">No epics linked</p>'}
       </div>`;
   });
 
-  barsEl.innerHTML = html;
+  html += '</div>';
+  contentEl.innerHTML = html;
+}
+
+// ─── Sprint Velocity ───
+let sprintVelocityChart = null;
+
+function getCompletedSprintVelocity(sprints) {
+  return sprints
+    .filter(s => s.status === 'completed' && s.items && s.items.length > 0)
+    .sort((a, b) => (a.completedAt || a.createdAt || '').localeCompare(b.completedAt || b.createdAt || ''))
+    .map(s => {
+      const doneItems = s.items.filter(i => i.column === 'done');
+      return {
+        name: s.name,
+        delivered: doneItems.reduce((sum, i) => sum + (i.storyPoints || 0), 0),
+        committed: s.items.reduce((sum, i) => sum + (i.storyPoints || 0), 0),
+        doneCount: doneItems.length,
+        totalCount: s.items.length,
+      };
+    });
+}
+
+function renderVelocityChart(sprints) {
+  const canvas = document.getElementById('sprint-velocity-chart');
+  const emptyEl = document.getElementById('velocity-widget-empty');
+
+  const data = getCompletedSprintVelocity(sprints);
+
+  if (!data.length) {
+    canvas.style.display = 'none';
+    emptyEl.classList.remove('hidden');
+    if (sprintVelocityChart) { sprintVelocityChart.destroy(); sprintVelocityChart = null; }
+    return;
+  }
+
+  canvas.style.display = 'block';
+  emptyEl.classList.add('hidden');
+  if (sprintVelocityChart) sprintVelocityChart.destroy();
+
+  const labels = data.map(d => d.name);
+  const delivered = data.map(d => d.delivered);
+  const committed = data.map(d => d.committed);
+  const avg = delivered.reduce((s, v) => s + v, 0) / delivered.length;
+  const avgLine = data.map(() => Math.round(avg * 10) / 10);
+
+  const c = chartColors();
+  const dark = isDark();
+
+  sprintVelocityChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Committed',
+          data: committed,
+          backgroundColor: dark ? 'rgba(100, 116, 139, 0.3)' : 'rgba(203, 213, 225, 0.5)',
+          borderColor: dark ? '#64748b' : '#cbd5e1',
+          borderWidth: 1,
+          borderRadius: 4,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8,
+        },
+        {
+          label: 'Delivered',
+          data: delivered,
+          backgroundColor: dark ? 'rgba(16, 185, 129, 0.6)' : 'rgba(16, 185, 129, 0.5)',
+          borderColor: '#10b981',
+          borderWidth: 1,
+          borderRadius: 4,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8,
+        },
+        {
+          label: 'Avg Velocity',
+          data: avgLine,
+          type: 'line',
+          borderColor: dark ? '#f59e0b' : '#d97706',
+          borderWidth: 2,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: { color: c.legend, boxWidth: 12, padding: 12, font: { size: 11 } },
+        },
+        tooltip: {
+          backgroundColor: c.tooltipBg,
+          titleColor: c.tooltipText,
+          bodyColor: c.tooltipText,
+          borderColor: c.tooltipBorder,
+          borderWidth: 1,
+          callbacks: {
+            afterBody: function(context) {
+              const idx = context[0].dataIndex;
+              const d = data[idx];
+              return d.doneCount + '/' + d.totalCount + ' items completed';
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: c.tick, font: { size: 11 } },
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: c.grid },
+          ticks: { color: c.tick, font: { size: 11 } },
+          title: { display: true, text: 'Story Points', color: c.tick, font: { size: 11 } },
+        },
+      },
+    },
+  });
 }
 
 // ─── Team Distribution ───
